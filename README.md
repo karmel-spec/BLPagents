@@ -32,6 +32,14 @@ credentials to see live health (without them the fleet renders from the
 registry alone). Set `BLP_APP_ACCESS_KEY` to gate the app behind the team
 passcode.
 
+## Registry sync
+
+`npm run sync-registry` regenerates `src/lib/agent-registry.json` from
+Karmel's agent-registry sheet ("Agents" tab — see its README tab for the
+schema). Identity fields come from the sheet; console-owned presentation
+(accent, avatar, tagline) is preserved. Run it after editing the sheet,
+review the diff, commit.
+
 ## Carried over from the Sales App (salesapp2)
 
 `agent-registry.json`, `agent-vault.json`, `agents.ts`, `agent-health.ts`,

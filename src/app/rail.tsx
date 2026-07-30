@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { AGENTS, DEPARTMENTS } from "@/lib/agents";
+import { BLP_APPS } from "@/lib/blp-apps";
 
 /**
  * Navigation — black department rail on desktop, hamburger dropdown on
@@ -13,6 +14,7 @@ function RailNav() {
   const pathname = usePathname();
   const dept = useSearchParams().get("dept");
   const [open, setOpen] = useState(false);
+  const [appsOpen, setAppsOpen] = useState(false);
 
   // Close the mobile menu on any navigation.
   useEffect(() => {
@@ -43,6 +45,26 @@ function RailNav() {
           <span>{counts.get(d) || 0}</span>
         </Link>
       ))}
+      <div className="nav-label">More</div>
+      <button className="navbtn" onClick={() => setAppsOpen((v) => !v)} aria-expanded={appsOpen}>
+        BLP Apps<span>{appsOpen ? "▴" : "▾"}</span>
+      </button>
+      {appsOpen && (
+        <div className="apps-list">
+          {BLP_APPS.map((a) =>
+            a.note === "this app" ? (
+              <Link key={a.name} href={a.url}>
+                {a.name}<span className="note">{a.note}</span>
+              </Link>
+            ) : (
+              <a key={a.name} href={a.url} target="_blank" rel="noreferrer">
+                {a.name}<span className="note">{a.note}</span>
+              </a>
+            )
+          )}
+        </div>
+      )}
+      <a href="/api/auth/logout" className="signout">Sign out</a>
     </nav>
   );
 

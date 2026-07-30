@@ -7,7 +7,8 @@
     "dev": "next dev -p 8873",
     "build": "next build",
     "start": "next start -p 8873",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sync-registry": "node scripts/sync-registry.mjs"
   },
   "dependencies": {
     "next": "^15.3.3",
