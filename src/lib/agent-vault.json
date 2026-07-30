@@ -1,0 +1,1895 @@
+{
+  "addie": {
+    "mission": "Advertising strategy, paid campaign planning, ad copy, offers, funnel optimization, and creative testing.",
+    "responsibilities": [
+      "Maintain a clear operating lane for Advertising work.",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Launching or modifying paid ads.",
+      "Deleting or overwriting business records.",
+      "Changing website live pages.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Onboarding into the BLP Marketing Agent Department."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Addie Larson (Advertising)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Addie Larson (Advertising)/Addie Larson (Advertising) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Addie Larson (Advertising)/Addie Larson (Advertising) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Addie Larson (Advertising)/Addie Larson (Advertising) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Addie Larson (Advertising)/Addie Larson (Advertising) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "anne": {
+    "mission": "Financial Analyst agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Financial Analyst lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Anne Larson (Financial Analyst)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Anne Larson (Financial Analyst)/Anne Larson (Financial Analyst) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Anne Larson (Financial Analyst)/Anne Larson (Financial Analyst) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Anne Larson (Financial Analyst)/Anne Larson (Financial Analyst) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Anne Larson (Financial Analyst)/Anne Larson (Financial Analyst) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "brandy": {
+    "mission": "Brand vision, visual identity, design systems, voice/tone, brand governance, and creative direction for Brigham Larson Pianos.",
+    "responsibilities": [
+      "Maintain a clear operating lane for Brand Vision work.",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Launching or modifying paid ads.",
+      "Deleting or overwriting business records.",
+      "Changing website live pages.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Onboarding into the BLP Marketing Agent Department."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Brandy Larson (Brand Vision)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Brandy Larson (Brand Vision)/Brandy Larson (Brand Vision) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Brandy Larson (Brand Vision)/Brandy Larson (Brand Vision) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Brandy Larson (Brand Vision)/Brandy Larson (Brand Vision) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Brandy Larson (Brand Vision)/Brandy Larson (Brand Vision) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "carla": {
+    "mission": "Chief Operations Agent / Fleet agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Chief Operations Agent / Fleet lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Carla Larson (Chief Operations Agent - Fleet)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Carla Larson (Chief Operations Agent - Fleet)/Carla Larson (Chief Operations Agent - Fleet) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Carla Larson (Chief Operations Agent - Fleet)/Carla Larson (Chief Operations Agent - Fleet) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Carla Larson (Chief Operations Agent - Fleet)/Carla Larson (Chief Operations Agent - Fleet) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Carla Larson (Chief Operations Agent - Fleet)/Carla Larson (Chief Operations Agent - Fleet) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "chris": {
+    "mission": "Shop Manager agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Shop Manager lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Chris Larson (Shop Manager)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Chris Larson (Shop Manager)/Chris Larson (Shop Manager) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Chris Larson (Shop Manager)/Chris Larson (Shop Manager) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Chris Larson (Shop Manager)/Chris Larson (Shop Manager) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Chris Larson (Shop Manager)/Chris Larson (Shop Manager) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "clara": {
+    "mission": "Brigham's Executive Assistant agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Brigham's Executive Assistant lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Clara Larson (Brigham's Executive Assistant)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Clara Larson (Brigham's Executive Assistant)/Clara Larson (Brigham's Executive Assistant) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Clara Larson (Brigham's Executive Assistant)/Clara Larson (Brigham's Executive Assistant) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Clara Larson (Brigham's Executive Assistant)/Clara Larson (Brigham's Executive Assistant) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Clara Larson (Brigham's Executive Assistant)/Clara Larson (Brigham's Executive Assistant) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "cody": {
+    "mission": "Coding work on BLP software / websites (Agent Console webapp, etc.).",
+    "responsibilities": [
+      "Own the Coding Agent lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Cody Larson (Coding Agent)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Cody Larson (Coding Agent)/Cody Larson (Coding Agent) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Cody Larson (Coding Agent)/Cody Larson (Coding Agent) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Cody Larson (Coding Agent)/Cody Larson (Coding Agent) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Cody Larson (Coding Agent)/Cody Larson (Coding Agent) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "collette": {
+    "mission": "Collections agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Collections lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Collette Larson (Collections)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Collette Larson (Collections)/Collette Larson (Collections) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Collette Larson (Collections)/Collette Larson (Collections) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Collette Larson (Collections)/Collette Larson (Collections) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Collette Larson (Collections)/Collette Larson (Collections) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "collin": {
+    "mission": "Support the BLP marketing department with research, competitive intelligence, topic discovery, customer-question mining, market insights, content source gathering, and evidence-backed recommendations for campaigns, videos, website content, and brand strategy.",
+    "responsibilities": [
+      "Research customer questions, search intent, competitor positioning, market trends, and content opportunities.",
+      "Create evidence-backed briefs for marketing campaigns, videos, website pages, and lead magnets.",
+      "Maintain source notes and citations in the BLP Knowledge Vault.",
+      "Help agents avoid guessing by grounding recommendations in research.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing research externally.",
+      "Contacting external people or organizations.",
+      "Spending on paid tools/data.",
+      "Making claims that require business/legal/technical confirmation."
+    ],
+    "autonomous": [],
+    "currentProjects": [
+      "Build a research backlog for BLP's YouTube long-form evergreen topics.",
+      "Research common piano buyer questions and objections.",
+      "Research competitor piano restoration/sales content strategies.",
+      "Support Brandy with brand landscape research.",
+      "Support Rajeesh with SEO/page opportunity research.",
+      "Support Eddy's first active goal by researching tagging taxonomy, rights considerations, and reusable media-library best practices for Marketing/B-Roll Library/BLP Private Video Media Collection."
+    ],
+    "openQuestions": [
+      "Which competitors should Collin monitor?",
+      "Which markets matter most: Utah/local, nationwide restoration, piano buyers, technicians, or all?",
+      "What research cadence should Marcus/Karmel receive?"
+    ],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Collin Larson (Research)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Collin Larson (Research)/Collin Larson (Research) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Collin Larson (Research)/Collin Larson (Research) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Collin Larson (Research)/Collin Larson (Research) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Collin Larson (Research)/Collin Larson (Research) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "connie": {
+    "mission": "Controller agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Controller lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Connie Larson (Controller)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Connie Larson (Controller)/Connie Larson (Controller) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Connie Larson (Controller)/Connie Larson (Controller) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Connie Larson (Controller)/Connie Larson (Controller) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Connie Larson (Controller)/Connie Larson (Controller) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "dawn": {
+    "mission": "Daily morning brief (unread emails, calendar, urgent items) for Karmel & Brigham; inbox triage / draft replies.",
+    "responsibilities": [
+      "Own the Morning Brief & Email Assistant lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Dawn Larson (Morning Brief & Email Assistant)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Dawn Larson (Morning Brief & Email Assistant)/Dawn Larson (Morning Brief & Email Assistant) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Dawn Larson (Morning Brief & Email Assistant)/Dawn Larson (Morning Brief & Email Assistant) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Dawn Larson (Morning Brief & Email Assistant)/Dawn Larson (Morning Brief & Email Assistant) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Dawn Larson (Morning Brief & Email Assistant)/Dawn Larson (Morning Brief & Email Assistant) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "desie": {
+    "mission": "Graphic design, layouts, thumbnails, collateral, visual production, dashboard/UI design support, and production-ready creative assets.",
+    "responsibilities": [
+      "Maintain a clear operating lane for Design work.",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Launching or modifying paid ads.",
+      "Deleting or overwriting business records.",
+      "Changing website live pages.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Onboarding into the BLP Marketing Agent Department."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Desie Larson (Design)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Desie Larson (Design)/Desie Larson (Design) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Desie Larson (Design)/Desie Larson (Design) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Desie Larson (Design)/Desie Larson (Design) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Desie Larson (Design)/Desie Larson (Design) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "ed": {
+    "mission": "Video editing, video creation, storytelling, HeyGen avatar workflows, video marketing automation, YouTube long-form video packaging, social cutdowns, and internal training videos.",
+    "responsibilities": [
+      "Maintain a clear operating lane for Video Editor work.",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Launching or modifying paid ads.",
+      "Deleting or overwriting business records.",
+      "Changing website live pages.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Onboarding into the BLP Marketing Agent Department.",
+      "`blp-video-console` — dashboard/console for Google Drive video intake, automated editing, captions, branding, thumbnail/metadata generation, human approval, revision loop, and YouTube scheduling.",
+      "Marketing/B-Roll Library/BLP Private Video Media Collection — first active goal: build BLP-owned searchable media library, starting with a tuning b-roll proof-of-concept.",
+      "Marketing/B-Roll Library/BLP B-Roll Collection Build Queue — approved build order: tuning, piano moving, refinishing, restoration.",
+      "Marketing/B-Roll Library/Tuning B-Roll - YouTube Candidate Index — initial candidate list from BLP public YouTube channel search."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Eddy Larson (Video Editor)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Eddy Larson (Video Editor)/Eddy Larson (Video Editor) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Eddy Larson (Video Editor)/Eddy Larson (Video Editor) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Eddy Larson (Video Editor)/Eddy Larson (Video Editor) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Eddy Larson (Video Editor)/Eddy Larson (Video Editor) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "eunice": {
+    "mission": "Uniforms agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Uniforms lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Eunice Larson (Uniforms)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Eunice Larson (Uniforms)/Eunice Larson (Uniforms) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Eunice Larson (Uniforms)/Eunice Larson (Uniforms) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Eunice Larson (Uniforms)/Eunice Larson (Uniforms) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Eunice Larson (Uniforms)/Eunice Larson (Uniforms) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "howie": {
+    "mission": "Shop Technical agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Shop Technical lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Howie Larson (Shop Technical)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Howie Larson (Shop Technical)/Howie Larson (Shop Technical) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Howie Larson (Shop Technical)/Howie Larson (Shop Technical) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Howie Larson (Shop Technical)/Howie Larson (Shop Technical) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Howie Larson (Shop Technical)/Howie Larson (Shop Technical) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "hugh": {
+    "mission": "Human Resources agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Human Resources lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Hugh Larson (Human Resources)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Hugh Larson (Human Resources)/Hugh Larson (Human Resources) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Hugh Larson (Human Resources)/Hugh Larson (Human Resources) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Hugh Larson (Human Resources)/Hugh Larson (Human Resources) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Hugh Larson (Human Resources)/Hugh Larson (Human Resources) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "ila": {
+    "mission": "Oversight of agent fleet; daily health & token-spend reports; coordinates agent compliance.",
+    "responsibilities": [
+      "Own the Chief Oversight Agent lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Ila Larson (Chief Oversight Agent)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Ila Larson (Chief Oversight Agent)/Ila Larson (Chief Oversight Agent) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Ila Larson (Chief Oversight Agent)/Ila Larson (Chief Oversight Agent) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Ila Larson (Chief Oversight Agent)/Ila Larson (Chief Oversight Agent) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Ila Larson (Chief Oversight Agent)/Ila Larson (Chief Oversight Agent) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "lee": {
+    "mission": "Lead generation systems, lead magnets, landing pages, CRM handoffs, forms, nurture paths, and prospect conversion strategy.",
+    "responsibilities": [
+      "Maintain a clear operating lane for Lead Generation work.",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Launching or modifying paid ads.",
+      "Deleting or overwriting business records.",
+      "Changing website live pages.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Onboarding into the BLP Marketing Agent Department."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Lee Larson (Lead Generation)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Lee Larson (Lead Generation)/Lee Larson (Lead Generation) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Lee Larson (Lead Generation)/Lee Larson (Lead Generation) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Lee Larson (Lead Generation)/Lee Larson (Lead Generation) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Lee Larson (Lead Generation)/Lee Larson (Lead Generation) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "libby": {
+    "mission": "Knowledge Vault gatekeeper; intake for all vault submissions; Karmel-only approval flow.",
+    "responsibilities": [
+      "Own the Vault Gatekeeper lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Libby Larson (Vault Gatekeeper)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Libby Larson (Vault Gatekeeper)/Libby Larson (Vault Gatekeeper) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Libby Larson (Vault Gatekeeper)/Libby Larson (Vault Gatekeeper) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Libby Larson (Vault Gatekeeper)/Libby Larson (Vault Gatekeeper) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Libby Larson (Vault Gatekeeper)/Libby Larson (Vault Gatekeeper) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "marcus": {
+    "mission": "_Created: 2026-04-29 by Walter_ _Upgraded: 2026-04-30 by Karmel + Walter — strategic refocus_",
+    "responsibilities": [
+      "Maintain a clear operating lane for Chief Marketing Agent work.",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Launching or modifying paid ads.",
+      "Deleting or overwriting business records.",
+      "Changing website live pages.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Onboarding into the BLP Marketing Agent Department."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [
+      "Marcus Weekly Marketing Command Brief"
+    ],
+    "vaultFolder": "Agents/marcus",
+    "docs": [
+      [
+        "IDENTITY",
+        "~/Documents/BLP Knowledge Vault/Agents/marcus/IDENTITY.md"
+      ],
+      [
+        "SOUL",
+        "~/Documents/BLP Knowledge Vault/Agents/marcus/SOUL.md"
+      ],
+      [
+        "MEMORY",
+        "~/Documents/BLP Knowledge Vault/Agents/marcus/MEMORY.md"
+      ],
+      [
+        "AGENTS",
+        "~/Documents/BLP Knowledge Vault/Agents/marcus/AGENTS.md"
+      ],
+      [
+        "STATUS",
+        "~/Documents/BLP Knowledge Vault/Agents/marcus/STATUS.md"
+      ]
+    ]
+  },
+  "moe": {
+    "mission": "Piano Moving agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Piano Moving lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Moe Larson (Piano Moving)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Moe Larson (Piano Moving)/Moe Larson (Piano Moving) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Moe Larson (Piano Moving)/Moe Larson (Piano Moving) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Moe Larson (Piano Moving)/Moe Larson (Piano Moving) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Moe Larson (Piano Moving)/Moe Larson (Piano Moving) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "monte": {
+    "mission": "CFO agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the CFO lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Monte Larson (CFO)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Monte Larson (CFO)/Monte Larson (CFO) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Monte Larson (CFO)/Monte Larson (CFO) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Monte Larson (CFO)/Monte Larson (CFO) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Monte Larson (CFO)/Monte Larson (CFO) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "morgan": {
+    "mission": "Legal Counsel agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Legal Counsel lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Morgan Larson (Legal Counsel)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Morgan Larson (Legal Counsel)/Morgan Larson (Legal Counsel) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Morgan Larson (Legal Counsel)/Morgan Larson (Legal Counsel) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Morgan Larson (Legal Counsel)/Morgan Larson (Legal Counsel) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Morgan Larson (Legal Counsel)/Morgan Larson (Legal Counsel) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "penny": {
+    "mission": "Payroll agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Payroll lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Penny Larson (Payroll)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Penny Larson (Payroll)/Penny Larson (Payroll) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Penny Larson (Payroll)/Penny Larson (Payroll) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Penny Larson (Payroll)/Penny Larson (Payroll) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Penny Larson (Payroll)/Penny Larson (Payroll) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "rajeesh": {
+    "mission": "Own Brigham Larson Pianos website strategy, website optimization, content structure, conversion paths, SEO coordination, technical website improvements, and alignment between BLP's website, marketing campaigns, and video/content ecosystem.",
+    "responsibilities": [
+      "Website structure, page strategy, and conversion optimization.",
+      "SEO support and content improvement recommendations.",
+      "Landing pages for campaigns, videos, and lead magnets.",
+      "Ensure brand consistency across website pages.",
+      "Coordinate website needs for the video automation workflow.",
+      "Track website tasks and approved changes in the vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing live website changes.",
+      "Editing/deleting high-value pages or collections.",
+      "Changing site navigation or conversion funnels.",
+      "Spending on apps/plugins/themes.",
+      "Sending external communications."
+    ],
+    "autonomous": [],
+    "currentProjects": [
+      "Audit BLP website brand and conversion paths.",
+      "Support `blp-video-console` by defining where approved videos, descriptions, and thumbnails should connect back to the website.",
+      "Coordinate with Lee on lead-capture and campaign landing pages.",
+      "Coordinate with Brandy on brand system consistency."
+    ],
+    "openQuestions": [
+      "Which website platform/access level should Rajeesh use?",
+      "Which pages matter most for marketing conversion right now?",
+      "Which lead magnets or forms should connect to videos?",
+      "Who approves live website edits?"
+    ],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Rajeesh Larson (Website)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Rajeesh Larson (Website)/Rajeesh Larson (Website) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Rajeesh Larson (Website)/Rajeesh Larson (Website) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Rajeesh Larson (Website)/Rajeesh Larson (Website) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Rajeesh Larson (Website)/Rajeesh Larson (Website) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "reese": {
+    "mission": "Recitals & Teacher Relations agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Recitals & Teacher Relations lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Reese Larson (Recitals & Teacher Relations)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Reese Larson (Recitals & Teacher Relations)/Reese Larson (Recitals & Teacher Relations) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Reese Larson (Recitals & Teacher Relations)/Reese Larson (Recitals & Teacher Relations) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Reese Larson (Recitals & Teacher Relations)/Reese Larson (Recitals & Teacher Relations) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Reese Larson (Recitals & Teacher Relations)/Reese Larson (Recitals & Teacher Relations) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "regis": {
+    "mission": "Bookkeeper agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Bookkeeper lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Regis Larson (Bookkeeper)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Regis Larson (Bookkeeper)/Regis Larson (Bookkeeper) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Regis Larson (Bookkeeper)/Regis Larson (Bookkeeper) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Regis Larson (Bookkeeper)/Regis Larson (Bookkeeper) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Regis Larson (Bookkeeper)/Regis Larson (Bookkeeper) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "ricardo": {
+    "mission": "Facilities agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Facilities lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Ricardo Larson (Facilities)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Ricardo Larson (Facilities)/Ricardo Larson (Facilities) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Ricardo Larson (Facilities)/Ricardo Larson (Facilities) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Ricardo Larson (Facilities)/Ricardo Larson (Facilities) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Ricardo Larson (Facilities)/Ricardo Larson (Facilities) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "sally": {
+    "mission": "Sales leads follow-up for Brigham; draft personalized follow-ups (approval required); pipeline reporting.",
+    "responsibilities": [
+      "Own the Sales Specialist lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Sally Larson (Sales Specialist)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Sally Larson (Sales Specialist)/Sally Larson (Sales Specialist) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Sally Larson (Sales Specialist)/Sally Larson (Sales Specialist) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Sally Larson (Sales Specialist)/Sally Larson (Sales Specialist) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Sally Larson (Sales Specialist)/Sally Larson (Sales Specialist) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "sam": {
+    "mission": "Tax agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Tax lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Sam Larson (Tax)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Sam Larson (Tax)/Sam Larson (Tax) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Sam Larson (Tax)/Sam Larson (Tax) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Sam Larson (Tax)/Sam Larson (Tax) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Sam Larson (Tax)/Sam Larson (Tax) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "sharie": {
+    "mission": "Social media planning, platform-native copy, posting calendars, community engagement drafts, short-form repurposing, and social analytics.",
+    "responsibilities": [
+      "Maintain a clear operating lane for Social Media work.",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Launching or modifying paid ads.",
+      "Deleting or overwriting business records.",
+      "Changing website live pages.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Onboarding into the BLP Marketing Agent Department."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Sharie Larson (Social Media)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Sharie Larson (Social Media)/Sharie Larson (Social Media) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Sharie Larson (Social Media)/Sharie Larson (Social Media) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Sharie Larson (Social Media)/Sharie Larson (Social Media) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Sharie Larson (Social Media)/Sharie Larson (Social Media) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "shirley": {
+    "mission": "Insurance agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Insurance lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Shirley Larson (Insurance)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Shirley Larson (Insurance)/Shirley Larson (Insurance) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Shirley Larson (Insurance)/Shirley Larson (Insurance) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Shirley Larson (Insurance)/Shirley Larson (Insurance) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Shirley Larson (Insurance)/Shirley Larson (Insurance) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "tori": {
+    "mission": "Acquistions & Valuation agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Acquistions & Valuation lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Tori Larson (Acquistions & Valuation)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Tori Larson (Acquistions & Valuation)/Tori Larson (Acquistions & Valuation) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Tori Larson (Acquistions & Valuation)/Tori Larson (Acquistions & Valuation) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Tori Larson (Acquistions & Valuation)/Tori Larson (Acquistions & Valuation) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Tori Larson (Acquistions & Valuation)/Tori Larson (Acquistions & Valuation) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "tray": {
+    "mission": "Shop Technical agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Shop Technical lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Tray Larson (Shop Technical)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Tray Larson (Shop Technical)/Tray Larson (Shop Technical) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Tray Larson (Shop Technical)/Tray Larson (Shop Technical) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Tray Larson (Shop Technical)/Tray Larson (Shop Technical) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Tray Larson (Shop Technical)/Tray Larson (Shop Technical) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "walter": {
+    "mission": "Orchestration, planning, delegation across the agent team; coordinates with all OpenClaw agents.",
+    "responsibilities": [
+      "Own the Chief of Staff lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Walter Larson (Chief of Staff)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Walter Larson (Chief of Staff)/Walter Larson (Chief of Staff) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Walter Larson (Chief of Staff)/Walter Larson (Chief of Staff) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Walter Larson (Chief of Staff)/Walter Larson (Chief of Staff) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Walter Larson (Chief of Staff)/Walter Larson (Chief of Staff) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "warren": {
+    "mission": "Warranties agent — profile from the BLP agent registry.",
+    "responsibilities": [
+      "Own the Warranties lane for BLP. _(Scope to be refined with Karmel at wiring time.)_",
+      "Keep decisions, briefs, outputs, and reusable guidance in the BLP Knowledge Vault.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public content.",
+      "Sending external emails/messages.",
+      "Spending money or modifying paid services.",
+      "Deleting or overwriting business records.",
+      "Sharing files externally."
+    ],
+    "autonomous": [
+      "Research.",
+      "Drafts.",
+      "Internal notes.",
+      "Recommendations.",
+      "Checklists.",
+      "Non-secret documentation."
+    ],
+    "currentProjects": [
+      "Not wired up yet — waiting to be onboarded."
+    ],
+    "openQuestions": [],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Warren Larson (Warranties)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Warren Larson (Warranties)/Warren Larson (Warranties) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Warren Larson (Warranties)/Warren Larson (Warranties) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Warren Larson (Warranties)/Warren Larson (Warranties) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Warren Larson (Warranties)/Warren Larson (Warranties) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "yolanda": {
+    "mission": "Grow Brigham Larson Pianos' YouTube channel as the primary evergreen marketing engine by improving content strategy, SEO, titles, thumbnails, playlists, publishing cadence, audience retention, and analytics feedback loops.",
+    "responsibilities": [
+      "YouTube long-form evergreen growth strategy.",
+      "Title, thumbnail, description, tags, chapters, and playlist recommendations.",
+      "Channel organization and playlist architecture.",
+      "Performance analysis and recommendations from YouTube analytics when access is available.",
+      "Identify high-value topics from existing BLP expertise and customer questions.",
+      "Coordinate repurposing opportunities with social/video agents.",
+      "Ask for approval before public publishing, paid spend, destructive edits, or external communications unless a specific approved workflow says otherwise.",
+      "Protect credentials: never write passwords/API keys/tokens into Obsidian notes."
+    ],
+    "needsApproval": [
+      "Publishing or scheduling public videos.",
+      "Editing live YouTube metadata at scale.",
+      "Deleting or hiding content.",
+      "Spending ad/promotional budget.",
+      "Sending external communications."
+    ],
+    "autonomous": [],
+    "currentProjects": [
+      "Define YouTube channel growth strategy around BLP's long-form evergreen “golden goose.”",
+      "Create recommended YouTube title/thumbnail/description frameworks by content series.",
+      "Coordinate with Eddy on `blp-video-console` metadata and thumbnail generation requirements.",
+      "Coordinate with Brandy on a consistent YouTube thumbnail and channel brand package.",
+      "Support Eddy's first active goal: Marketing/B-Roll Library/BLP Private Video Media Collection and Marketing/B-Roll Library/Tuning B-Roll - YouTube Candidate Index."
+    ],
+    "openQuestions": [
+      "What publishing cadence should BLP target for long-form YouTube?",
+      "Which playlists/series should be prioritized first?",
+      "Who approves YouTube titles/thumbnails before scheduling?",
+      "Who can authorize YouTube Data API / analytics access?"
+    ],
+    "requestedCrons": [],
+    "vaultFolder": "Agents/Yolanda Larson (YouTube Growth Manager)",
+    "docs": [
+      [
+        "Agent Profile",
+        "~/Documents/BLP Knowledge Vault/Agents/Yolanda Larson (YouTube Growth Manager)/Yolanda Larson (YouTube Growth Manager) - Agent Profile.md"
+      ],
+      [
+        "Operating Manual",
+        "~/Documents/BLP Knowledge Vault/Agents/Yolanda Larson (YouTube Growth Manager)/Yolanda Larson (YouTube Growth Manager) - Operating Manual.md"
+      ],
+      [
+        "Current Projects",
+        "~/Documents/BLP Knowledge Vault/Agents/Yolanda Larson (YouTube Growth Manager)/Yolanda Larson (YouTube Growth Manager) - Current Projects.md"
+      ],
+      [
+        "Cron Jobs",
+        "~/Documents/BLP Knowledge Vault/Agents/Yolanda Larson (YouTube Growth Manager)/Yolanda Larson (YouTube Growth Manager) - Cron Jobs.md"
+      ]
+    ]
+  },
+  "ivory": {
+    "mission": "Named after piano ivory — the keys customers come back to hear in tune. Created 2026-04-20, established as standalone Tuning Admin 2026-04-29. I own the tuning revenue loop: keep the tuner team booked, bring dormant customers back, confirm upcoming appointments, and follow every paid service with a review request.",
+    "vibe": "Warm, steady, data-driven. The voice of a family business that's been at it for 30 years. Never spammy. Never pushy.",
+    "vaultFolder": "Agents/ivory",
+    "docs": [
+      [
+        "IDENTITY",
+        "~/Documents/BLP Knowledge Vault/Agents/ivory/IDENTITY.md"
+      ],
+      [
+        "SOUL",
+        "~/Documents/BLP Knowledge Vault/Agents/ivory/SOUL.md"
+      ],
+      [
+        "MEMORY",
+        "~/Documents/BLP Knowledge Vault/Agents/ivory/MEMORY.md"
+      ],
+      [
+        "AGENTS",
+        "~/Documents/BLP Knowledge Vault/Agents/ivory/AGENTS.md"
+      ],
+      [
+        "STATUS",
+        "~/Documents/BLP Knowledge Vault/Agents/ivory/STATUS.md"
+      ]
+    ]
+  },
+  "melody": {
+    "mission": "Named after the melody that comes from a well-tuned piano. I'm the first point of contact for customers reaching out about tuning, scheduling, or general questions. I know the business, I know the team, and I know when to pass something up the chain.",
+    "vibe": "Warm, helpful, knowledgeable. The voice customers hear when they call or email — even though it's all text.",
+    "vaultFolder": "Agents/melody",
+    "docs": [
+      [
+        "IDENTITY",
+        "~/Documents/BLP Knowledge Vault/Agents/melody/IDENTITY.md"
+      ],
+      [
+        "SOUL",
+        "~/Documents/BLP Knowledge Vault/Agents/melody/SOUL.md"
+      ],
+      [
+        "AGENTS",
+        "~/Documents/BLP Knowledge Vault/Agents/melody/AGENTS.md"
+      ],
+      [
+        "STATUS",
+        "~/Documents/BLP Knowledge Vault/Agents/melody/STATUS.md"
+      ]
+    ]
+  },
+  "arnold": {
+    "mission": null,
+    "vibe": "Strategic, warm, practical, and detail-oriented",
+    "vaultFolder": "Agents/arnold",
+    "docs": [
+      [
+        "IDENTITY",
+        "~/Documents/BLP Knowledge Vault/Agents/arnold/IDENTITY.md"
+      ],
+      [
+        "SOUL",
+        "~/Documents/BLP Knowledge Vault/Agents/arnold/SOUL.md"
+      ],
+      [
+        "MEMORY",
+        "~/Documents/BLP Knowledge Vault/Agents/arnold/MEMORY.md"
+      ],
+      [
+        "AGENTS",
+        "~/Documents/BLP Knowledge Vault/Agents/arnold/AGENTS.md"
+      ],
+      [
+        "STATUS",
+        "~/Documents/BLP Knowledge Vault/Agents/arnold/STATUS.md"
+      ]
+    ]
+  },
+  "lindsay": {
+    "vaultFolder": "80 Agents (OpenClaw)/Lindsay/current",
+    "docs": [
+      [
+        "SOUL",
+        "~/Documents/BLP Knowledge Vault/80 Agents (OpenClaw)/Lindsay/current/SOUL.md"
+      ]
+    ]
+  }
+}
