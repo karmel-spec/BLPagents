@@ -41,9 +41,12 @@ button { font: inherit; }
 .shell { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 4px); }
 
 .rail { background: var(--rail); color: var(--rail-ink); padding: 16px 0 22px; }
-.rail .wm { display: block; padding: 2px 16px 14px; border-bottom: 1px solid #2c2c2c; color: #fff; }
-.rail .wm em { font-family: var(--script); font-style: normal; display: block; font-size: 15px; color: #b8b3a9; }
-.rail .wm b { font-weight: 700; letter-spacing: 0.22em; font-size: 13px; }
+.rail .wm { display: block; padding: 2px 16px 14px; color: #fff; }
+.rail .wm .logo { display: block; width: 100%; max-width: 168px; height: auto; }
+.rail .wm b { display: block; font-weight: 600; letter-spacing: 0.28em; font-size: 9.5px; color: #b8b3a9; margin-top: 7px; text-align: center; }
+.rail-top { border-bottom: 1px solid #2c2c2c; }
+.burger { display: none; }
+.rail .nav-label { padding: 14px 16px 4px; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.18em; color: #6f6b64; }
 .rail nav { margin-top: 10px; font-size: 13px; }
 .rail nav a { display: flex; justify-content: space-between; padding: 8px 16px; color: var(--rail-muted); }
 .rail nav a:hover, .rail nav a:focus-visible { color: #fff; outline: none; }
@@ -54,13 +57,23 @@ button { font: inherit; }
 .content { padding: 18px 22px 40px; min-width: 0; }
 
 @media (max-width: 760px) {
-  .shell { grid-template-columns: 1fr; }
-  .rail { padding: 10px 0; }
-  .rail nav { display: flex; overflow-x: auto; margin-top: 8px; }
-  .rail nav a { white-space: nowrap; gap: 6px; }
-  .rail nav a.on { box-shadow: inset 0 -3px 0 var(--crimson); }
+  .shell { grid-template-columns: 1fr; min-height: auto; }
+  .rail { padding: 0; position: sticky; top: 0; z-index: 20; }
+  .rail-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 6px 10px 0; }
+  .rail .wm { padding: 0 14px; display: flex; align-items: baseline; gap: 10px; }
+  .rail .wm .logo { width: 128px; }
+  .rail .wm b { margin-top: 0; letter-spacing: 0.2em; }
+  .burger {
+    display: block; background: none; border: none; color: #fff; font-size: 22px;
+    padding: 6px 14px; cursor: pointer; line-height: 1;
+  }
+  .burger:focus-visible { outline: 2px solid var(--crimson); }
+  .rail-links { display: none; border-top: 1px solid #2c2c2c; }
+  .rail-links.open { display: block; padding-bottom: 10px; }
+  .rail .nav-label { padding-top: 10px; }
   .rail .foot { display: none; }
   .content { padding: 14px 14px 32px; }
+  .page-head .clock { width: 100%; margin-left: 0; }
 }
 
 /* ---------- page head ---------- */
@@ -77,6 +90,8 @@ button { font: inherit; }
   padding: 5px 10px; display: inline-flex; gap: 7px; align-items: center;
   font-variant-numeric: tabular-nums;
 }
+.chip.filterbtn { cursor: pointer; color: var(--muted); }
+.chip.filterbtn.on { border-color: var(--ink); color: var(--ink); font-weight: 600; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 .dot.h { background: var(--ok); }
 .dot.w { background: var(--warn); }

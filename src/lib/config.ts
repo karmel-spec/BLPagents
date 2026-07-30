@@ -17,4 +17,14 @@ export const config = {
 
   // Key heartbeat reporters use on POST /api/agents/heartbeat (x-blp-key).
   heartbeatKey: process.env.BLP_AGENT_KEY || "",
+
+  // Google sign-in (domain-restricted OAuth, same model as the Sales App).
+  googleOauthClientId: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
+  googleOauthClientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET || "",
+  googleAllowedDomain: process.env.GOOGLE_ALLOWED_DOMAIN || "brighamlarsonpianos.com",
+  googleAllowedEmails: (process.env.GOOGLE_ALLOWED_EMAILS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean),
+  publicBaseUrl: process.env.PUBLIC_BASE_URL || "http://localhost:8873",
 };

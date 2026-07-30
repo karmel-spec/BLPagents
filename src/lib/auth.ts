@@ -21,9 +21,40 @@ export function checkPasscode(passcode: string): boolean {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+function sessionSecret(): string {
+  return config.accessKey || "blp-agents-open-mode";
+}
+
+/** Signed, named session for Google-authenticated teammates: g.<payload>.<sig> */
+export function googleSessionToken(name: string, email: string): string {
+  const payload = Buffer.from(
+    JSON.stringify({ n: name, e: email, exp: Date.now() + 30 * 86400_000 })
+  ).toString("base64url");
+  const sig = crypto.createHmac("sha256", sessionSecret()).update(`g.${payload}`).digest("hex");
+  return `g.${payload}.${sig}`;
+}
+
+export function parseGoogleSession(cookieValue: string | undefined): { name: string; email: string } | null {
+  if (!cookieValue?.startsWith("g.")) return null;
+  const [, payload, sig] = cookieValue.split(".");
+  if (!payload || !sig) return null;
+  const expected = crypto.createHmac("sha256", sessionSecret()).update(`g.${payload}`).digest("hex");
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  try {
+    const data = JSON.parse(Buffer.from(payload, "base64url").toString()) as { n: string; e: string; exp: number };
+    if (data.exp < Date.now()) return null;
+    return { name: data.n, email: data.e };
+  } catch {
+    return null;
+  }
+}
+
 export function isValidSession(cookieValue: string | undefined): boolean {
   if (!config.accessKey) return true; // open mode
-  return cookieValue === sessionToken();
+  if (cookieValue === sessionToken()) return true; // shared passcode
+  return parseGoogleSession(cookieValue) !== null; // named Google session
 }
 
 /** Key heartbeat reporters present on POST /api/agents/heartbeat. */

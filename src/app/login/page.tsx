@@ -32,10 +32,14 @@ export default function LoginPage() {
   return (
     <div className="login-wrap">
       <div className="login-card">
-        <div className="script">Brigham Larson</div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/blp-logo.png" alt="Brigham Larson Pianos" style={{ width: 200, maxWidth: "100%", height: "auto" }} />
         <div className="rule"><i /><b /><i /></div>
-        <div className="caps">AGENTS</div>
-        <p className="muted" style={{ margin: "18px 0 14px" }}>Team passcode to enter Mission Control.</p>
+        <div className="caps" style={{ fontSize: 15 }}>AGENT CONSOLE</div>
+        <a className="btn" href="/api/auth/google" style={{ display: "block", margin: "20px 0 6px" }}>
+          Sign in with Google
+        </a>
+        <p className="muted" style={{ margin: "4px 0 14px", fontSize: 12 }}>@brighamlarsonpianos.com accounts — or use the team passcode:</p>
         {error && <div className="banner bad" style={{ textAlign: "left" }}>⚠ {error}</div>}
         <form onSubmit={submit}>
           <input
@@ -45,8 +49,8 @@ export default function LoginPage() {
             onChange={(e) => setPasscode(e.target.value)}
             autoFocus
           />
-          <button className="btn" style={{ marginTop: 12, width: "100%" }} disabled={busy || !passcode}>
-            {busy ? "Checking…" : "Enter"}
+          <button className="btn ghost" style={{ marginTop: 12, width: "100%" }} disabled={busy || !passcode}>
+            {busy ? "Checking…" : "Enter with passcode"}
           </button>
         </form>
       </div>
