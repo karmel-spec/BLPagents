@@ -10,6 +10,15 @@ import { Avatar, DOT_LABEL, DOT_RANK, ago, dotClass, type HealthDot, type Health
 
 type Event = { at: string; text: string };
 
+type TrainingItem = { title: string; desc: string; href: string; video?: string };
+
+/** One-line additions here show up as cards in the Training section below the board. */
+const TRAININGS: TrainingItem[] = [
+  { title: "Store Map User Guide", desc: "How to use the BLP Store Map: signing in, finding pianos, clocking work time, paperwork & photos.", href: "https://docs.google.com/document/d/1aq3oTa6pxr6AhquS7pbJakAY4q4iPc_nUJW4yLMXDOM/edit?usp=sharing", video: "https://youtu.be/1zDlnks5CC0" },
+  { title: "BLP Restoration Handbook", desc: "The complete BLP restoration handbook.", href: "https://docs.google.com/document/d/1at8y6h6pphLmAL5gaE2TzfHeDv5Xn9xdbWVdozvxhxA/edit" },
+  { title: "Professional Standards & Team Culture", desc: "BLP professional standards: punctuality, dress code, safety, workplace conduct & cleanliness.", href: "https://docs.google.com/document/d/1PYw5R8o9k8iLtCIfRkWVcno2hqqYQcS5-8izyM4Fbsk/edit" },
+];
+
 function Board() {
   const router = useRouter();
   const dept = useSearchParams().get("dept");
@@ -145,6 +154,21 @@ function Board() {
             <div key={i} className="ev">
               <span className="t">{ago(e.at)} ago</span>
               {e.text}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card training">
+        <h2>🎓 Training</h2>
+        <div className="training-grid">
+          {TRAININGS.map((t) => (
+            <div key={t.href} className="training-item">
+              <a className="tt" href={t.href} target="_blank" rel="noopener">{t.title}</a>
+              <span className="td">{t.desc}</span>
+              {t.video && (
+                <a className="tv" href={t.video} target="_blank" rel="noopener">▶ Watch video</a>
+              )}
             </div>
           ))}
         </div>

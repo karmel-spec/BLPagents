@@ -157,6 +157,23 @@ tr.off .issues { color: #93392b; }
 .kv dt { color: var(--label); font-size: 12px; }
 .kv dd { margin: 0; overflow-wrap: anywhere; }
 
+/* ---------- training ---------- */
+.card.training { margin-top: 16px; margin-bottom: 0; }
+.training-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.training-item {
+  display: block; background: var(--paper); border: 1px solid var(--line); border-radius: 6px;
+  padding: 10px 12px; color: var(--ink);
+}
+.training-item:hover { border-color: var(--crimson); background: #faf8f3; }
+.training-item .tt { display: block; font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none; }
+.training-item .tt:hover { color: var(--crimson); text-decoration: underline; }
+.training-item .td { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+.training-item .tv {
+  display: inline-block; margin-top: 7px; font-family: var(--mono); font-size: 11px;
+  color: var(--crimson); text-decoration: none; font-weight: 600;
+}
+.training-item .tv:hover { text-decoration: underline; }
+
 .banner { border: 1px solid var(--line); border-left: 3px solid var(--deck); background: var(--card); border-radius: 6px; padding: 10px 14px; font-size: 13px; margin: 12px 0; }
 .banner.warn { border-left-color: var(--warn); background: var(--warn-bg); }
 .banner.bad { border-left-color: var(--off); background: var(--off-bg); }
