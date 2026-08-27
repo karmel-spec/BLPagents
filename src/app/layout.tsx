@@ -16,6 +16,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Rail />
           <main className="content">{children}</main>
         </div>
+        {/* Shared BLP 💡 suggestion box (hosted by the sales app). */}
+        <script src="https://blpsalesapp.netlify.app/suggest.js" defer data-app="Agent App" />
       </body>
     </html>
   );
