@@ -14,6 +14,7 @@ type TrainingItem = { title: string; desc: string; href: string; video?: string 
 
 /** One-line additions here show up as cards in the Training section below the board. */
 const TRAININGS: TrainingItem[] = [
+  { title: "BLP Admin Training", desc: "Curriculum, practice log and scorecard for BLP admins — onboarding, foundations, and every admin duty by priority.", href: "https://blpadmintraining.netlify.app/" },
   { title: "Store Map User Guide", desc: "How to use the BLP Store Map: signing in, finding pianos, clocking work time, paperwork & photos.", href: "https://docs.google.com/document/d/1aq3oTa6pxr6AhquS7pbJakAY4q4iPc_nUJW4yLMXDOM/edit?usp=sharing", video: "https://youtu.be/1zDlnks5CC0" },
   { title: "BLP Restoration Handbook", desc: "The complete BLP restoration handbook.", href: "https://blpshop.netlify.app/index.html#handbook" },
   { title: "Professional Standards & Team Culture", desc: "BLP professional standards: punctuality, dress code, safety, workplace conduct & cleanliness.", href: "https://docs.google.com/document/d/1PYw5R8o9k8iLtCIfRkWVcno2hqqYQcS5-8izyM4Fbsk/edit" },
