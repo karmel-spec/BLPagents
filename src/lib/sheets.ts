@@ -1,5 +1,5 @@
-import crypto from "crypto";
 import { config } from "./config";
+import { getGoogleToken, hasGoogleCreds } from "./google-auth";
 
 /**
  * Google Sheets access layer, trimmed to what the Agent Console needs:
@@ -18,43 +18,8 @@ export class SheetsReadOnlyError extends Error {
   }
 }
 
-let tokenCache: { token: string; exp: number } | null = null;
-
-async function getAccessToken(): Promise<string> {
-  if (!config.googleClientEmail || !config.googlePrivateKey) throw new SheetsReadOnlyError();
-  const now = Math.floor(Date.now() / 1000);
-  if (tokenCache && tokenCache.exp > now + 60) return tokenCache.token;
-
-  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url");
-  const claims = Buffer.from(
-    JSON.stringify({
-      iss: config.googleClientEmail,
-      scope: "https://www.googleapis.com/auth/spreadsheets",
-      aud: "https://oauth2.googleapis.com/token",
-      iat: now,
-      exp: now + 3600,
-    })
-  ).toString("base64url");
-  const signer = crypto.createSign("RSA-SHA256");
-  signer.update(`${header}.${claims}`);
-  const signature = signer.sign(config.googlePrivateKey).toString("base64url");
-
-  const res = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion: `${header}.${claims}.${signature}`,
-    }),
-  });
-  if (!res.ok) throw new Error(`Google token exchange failed (${res.status}): ${await res.text()}`);
-  const json = (await res.json()) as { access_token: string; expires_in: number };
-  tokenCache = { token: json.access_token, exp: now + json.expires_in };
-  return json.access_token;
-}
-
 async function api(path: string, init?: RequestInit): Promise<any> {
-  const token = await getAccessToken();
+  const token = await getGoogleToken(["https://www.googleapis.com/auth/spreadsheets"]);
   const res = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}${path}`,
     {
@@ -76,7 +41,7 @@ async function api(path: string, init?: RequestInit): Promise<any> {
 }
 
 export function canWrite(): boolean {
-  return Boolean(config.googleClientEmail && config.googlePrivateKey);
+  return hasGoogleCreds();
 }
 
 /** Create the tab if it doesn't exist yet. Returns true if it was created. */

@@ -157,6 +157,23 @@ tr.off .issues { color: #93392b; }
 .kv dt { color: var(--label); font-size: 12px; }
 .kv dd { margin: 0; overflow-wrap: anywhere; }
 
+/* ---------- daily briefings ---------- */
+.brief-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-top: 12px; }
+.brief { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.brief.today { border-top: 3px solid var(--ok); }
+.brief.stale { border-top: 3px solid var(--warn); }
+.brief.missing { border-top: 3px solid var(--deck); }
+.brief.missing .ag img { filter: grayscale(1) opacity(0.7); }
+.brief-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.brief-head .ag { display: flex; gap: 9px; align-items: center; font-weight: 600; font-size: 13px; }
+.brief-head .ag .r { color: var(--label); font-weight: 400; font-size: 11px; display: block; }
+.brief-title { font-size: 13px; font-weight: 600; }
+.brief-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.brief-sections { margin: 0; padding-left: 16px; font-size: 12.5px; line-height: 1.6; }
+.brief-sections a { text-decoration: underline; text-decoration-color: #d4cfc4; }
+.brief-sections a:hover { text-decoration-color: var(--ink); }
+.btn.small { padding: 6px 12px; font-size: 12px; align-self: flex-start; }
+
 /* ---------- training ---------- */
 .card.training { margin-top: 16px; margin-bottom: 0; }
 .training-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
