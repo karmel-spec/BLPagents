@@ -52,7 +52,7 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
       <div className="card">
         <h2>Give {agent.name} a task</h2>
         <div className="muted" style={{ fontSize: 13 }}>
-          {agent.name} isn&apos;t running on {live.machine || "the agents' Mac"} right now, so tasks can&apos;t be dispatched. Live agents show a green dot on the Fleet board.
+          {agent.name} isn&apos;t running on {live.machine || "the agents' Mac"} right now, so tasks can&apos;t be dispatched. Running agents show a green dot on the Agents board.
         </div>
       </div>
     );
@@ -161,6 +161,7 @@ function placeholderFor(agent: AgentConfig): string {
     case "marcus": return "Draft three Instagram captions for this week's Hailun arrivals — [DRAFT] to Gmail, don't publish.";
     case "lindsay": return "What did every agent do in the last 24 hours, and what failed?";
     case "clara": return "What's on Brigham's calendar tomorrow, and what does each meeting need?";
+    case "carla": return "Which vehicles have maintenance or registration due in the next 30 days?";
     default: return "Describe the task in a sentence or two.";
   }
 }

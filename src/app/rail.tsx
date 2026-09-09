@@ -29,7 +29,7 @@ function RailNav() {
   const links = (
     <nav>
       <Link href="/" className={pathname === "/" && !dept ? "on" : ""}>
-        Fleet<span>{AGENTS.length}</span>
+        Agents<span>{AGENTS.length}</span>
       </Link>
       <Link href="/activity" className={pathname === "/activity" ? "on" : ""}>
         Activity

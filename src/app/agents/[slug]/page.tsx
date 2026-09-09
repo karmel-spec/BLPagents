@@ -23,7 +23,7 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
   if (!agent) {
     return (
       <div className="banner bad">
-        ⚠ No agent named “{slug}” in the registry. <Link href="/" style={{ textDecoration: "underline" }}>Back to the fleet</Link>
+        ⚠ No agent named “{slug}” in the registry. <Link href="/" style={{ textDecoration: "underline" }}>Back to Agents</Link>
       </div>
     );
   }
@@ -34,7 +34,7 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
   return (
     <>
       <div className="page-head" style={{ alignItems: "center", gap: 16 }}>
-        <Link href="/" className="crumb">← Fleet</Link>
+        <Link href="/" className="crumb">← Agents</Link>
         <Avatar agent={agent} size={56} live={d !== "none" || agent.status === "live"} />
         <div>
           <h1 style={{ marginBottom: 2 }}>{agent.name}</h1>

@@ -80,7 +80,7 @@ function Board() {
   return (
     <>
       <div className="page-head">
-        <h1>Fleet{dept ? ` — ${dept}` : ""}</h1>
+        <h1>Agents{dept ? ` — ${dept}` : ""}</h1>
         <span className="clock">
           {checkedAt
             ? `last sweep ${checkedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`

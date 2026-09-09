@@ -70,19 +70,19 @@
   {
     "slug": "carla",
     "name": "Carla",
-    "role": "Chief Operations Agent / Fleet",
+    "role": "Fleet Manager",
     "department": "Operations",
     "tagline": "Chief Operations Agent / Fleet agent — profile from the BLP agent registry.",
     "reportsTo": "Karmel",
     "accent": "#8a5a00",
     "avatar": "/agents/carla.jpg",
     "email": "carla@brighamlarsonpianos.com",
-    "runtime": null,
-    "registryStatus": "On Deck",
-    "crons": null,
-    "homeComputer": null,
+    "runtime": "Hermes",
+    "registryStatus": "Active",
+    "crons": "carla-weekly-fleet-report (Mon 8:00 AM → Telegram to Karmel)",
+    "homeComputer": "Ivorys-MacBook-Pro-2 (Karmel's Mac)",
     "telegram": "https://t.me/carlalarsonbot",
-    "telegramActive": false
+    "telegramActive": true
   },
   {
     "slug": "chris",
