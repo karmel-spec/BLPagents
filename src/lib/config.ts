@@ -22,6 +22,11 @@ export const config = {
   // Key heartbeat reporters use on POST /api/agents/heartbeat (x-blp-key).
   heartbeatKey: process.env.BLP_AGENT_KEY || "",
 
+  // Agent Gateway — the bridge to the Hermes agents on Karmel's Mac
+  // (scripts/agent-gateway.mjs behind the Cloudflare tunnel).
+  gatewayUrl: process.env.BLP_GATEWAY_URL || "https://agents.brighamlarsonpianos.com",
+  gatewayKey: process.env.BLP_GATEWAY_KEY || "",
+
   // Google sign-in (domain-restricted OAuth, same model as the Sales App).
   googleOauthClientId: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
   googleOauthClientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET || "",

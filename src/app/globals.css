@@ -157,6 +157,25 @@ tr.off .issues { color: #93392b; }
 .kv dt { color: var(--label); font-size: 12px; }
 .kv dd { margin: 0; overflow-wrap: anywhere; }
 
+/* ---------- dispatch box ---------- */
+.card.dispatch { border-top: 3px solid var(--crimson); }
+.dispatch-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(200px, 2fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .dispatch-grid { grid-template-columns: 1fr; } }
+.dispatch textarea { resize: vertical; min-height: 96px; }
+.dispatch-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+.dispatch-rules { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 12.5px; line-height: 1.5; }
+.dispatch-rules p { margin: 4px 0 0; }
+.run { margin-top: 14px; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; background: var(--paper); }
+.run.completed { border-left: 3px solid var(--ok); }
+.run.failed { border-left: 3px solid var(--off); }
+.run-head { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.run-output { white-space: pre-wrap; font-family: var(--sans); font-size: 13px; line-height: 1.55; margin: 10px 0 0; max-height: 420px; overflow: auto; }
+.recent { margin-top: 14px; }
+.recent-row { display: grid; grid-template-columns: 70px 110px 1fr; gap: 10px; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); align-items: baseline; }
+.recent-row .who { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent-row .what { overflow-wrap: anywhere; }
+@media (max-width: 600px) { .recent-row { grid-template-columns: 1fr; gap: 2px; } }
+
 /* ---------- daily briefings ---------- */
 .brief-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-top: 12px; }
 .brief { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }

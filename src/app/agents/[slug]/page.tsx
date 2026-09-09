@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/client";
 import { getAgent } from "@/lib/agents";
 import { Avatar, DOT_LABEL, ago, dotClass, type HealthMap } from "../../fleet-shared";
+import DispatchBox from "./dispatch-box";
 
 /**
  * Agent console — renders any agent from the registry with live health
@@ -68,6 +69,8 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
       )}
 
       <div className="banner info">{agent.tagline}</div>
+
+      <DispatchBox agent={agent} />
 
       {agent.status === "coming-soon" && !h && (
         <div className="banner warn">
