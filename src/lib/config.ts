@@ -10,7 +10,11 @@ export const config = {
 
   // Google service account (share the Leads Log with this email as Editor).
   googleClientEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || "",
-  googlePrivateKey: (process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+  // Netlify keeps the quotes a .env line carries; dotenv strips them. Accept both.
+  googlePrivateKey: (process.env.GOOGLE_PRIVATE_KEY || "")
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/\\n/g, "\n"),
 
   // Shared team passcode gating the whole app (same model as the Sales App).
   accessKey: process.env.BLP_APP_ACCESS_KEY || "",
