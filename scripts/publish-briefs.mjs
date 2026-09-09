@@ -5,7 +5,7 @@
  *
  * Each brief cron is told to save its final Markdown to
  *   ~/.hermes/profiles/<agent>/cron/briefs/<YYYY-MM-DD>.md
- * and we also watch the job output dirs. New files become
+ * New files there become
  *   "<Kind> — Wednesday, September 9, 2026"
  * via `gog docs create` (Markdown import) as karmel@. One doc per kind per day.
  *
@@ -43,21 +43,22 @@ function longDate(d) {
   return new Intl.DateTimeFormat("en-US", { timeZone: "America/Denver", weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(d);
 }
 
+/**
+ * Only the briefs/ dir counts. Hermes' cron/output/<job>/ files are run
+ * logs (header + full prompt, even on failure) — never publish those.
+ */
 function candidates(profile) {
   const out = [];
   const briefsDir = path.join(HERMES, "profiles", profile, "cron", "briefs");
-  const outputDir = path.join(HERMES, "profiles", profile, "cron", "output");
-  const dirs = [briefsDir];
-  if (fs.existsSync(outputDir)) for (const j of fs.readdirSync(outputDir)) dirs.push(path.join(outputDir, j));
-  for (const dir of dirs) {
-    if (!fs.existsSync(dir)) continue;
-    for (const f of fs.readdirSync(dir)) {
-      const p = path.join(dir, f);
-      const st = fs.statSync(p);
-      if (!st.isFile() || st.size < 200 || Date.now() - st.mtimeMs > MAX_AGE_MS) continue;
-      if (!/\.(md|txt|markdown)$/i.test(f) && dir !== briefsDir && !dir.startsWith(outputDir)) continue;
-      out.push({ path: p, mtime: st.mtime });
-    }
+  if (!fs.existsSync(briefsDir)) return out;
+  for (const f of fs.readdirSync(briefsDir)) {
+    if (!/\.(md|txt|markdown)$/i.test(f)) continue;
+    const p = path.join(briefsDir, f);
+    const st = fs.statSync(p);
+    if (!st.isFile() || st.size < 200 || Date.now() - st.mtimeMs > MAX_AGE_MS) continue;
+    const head = fs.readFileSync(p, "utf8").slice(0, 200);
+    if (/^# Cron Job:/.test(head) || /\(FAILED\)/.test(head)) continue; // a run log slipped in
+    out.push({ path: p, mtime: st.mtime });
   }
   return out.sort((a, b) => b.mtime - a.mtime);
 }
