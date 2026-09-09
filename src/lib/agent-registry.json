@@ -359,8 +359,8 @@
   {
     "slug": "lindsay",
     "name": "Lindsay",
-    "role": "Chief Strategy Officer",
-    "department": "Leadership",
+    "role": "Operations Assistant to Karmel",
+    "department": "Operations",
     "tagline": "Umbrella agent for Karmel: strategy, delegation, memory, Vault writes, inbox triage, cron orchestration, ops.",
     "reportsTo": "Karmel",
     "accent": "#121212",
