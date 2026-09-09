@@ -7,12 +7,15 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // Static files (assistant.js widget, portraits, logo) must load from other
+  // BLP apps where nobody is signed in to the console — only pages are gated.
+  const isStaticAsset = /\.(js|png|jpe?g|svg|ico|css|webp)$/i.test(pathname);
   const open =
+    isStaticAsset ||
     pathname === "/login" ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/agents/heartbeat") ||
-    pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico";
+    pathname.startsWith("/_next");
   if (open) return NextResponse.next();
 
   const hasSession = Boolean(req.cookies.get("blpagents_session")?.value);
