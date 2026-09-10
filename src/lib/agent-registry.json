@@ -94,10 +94,10 @@
     "accent": "#5a4632",
     "avatar": "/agents/chris.jpg",
     "email": "chris@brighamlarsonpianos.com",
-    "runtime": "OpenClaw",
+    "runtime": "Hermes (agent) + Store Map web app (briefings)",
     "registryStatus": "Active",
     "crons": "Hourly Chris Inbox Triage (every hour)",
-    "homeComputer": null,
+    "homeComputer": "Ivorys-MacBook-Pro-2 (Karmel's Mac)",
     "telegram": "https://t.me/chrislarsonbot",
     "telegramActive": true
   },

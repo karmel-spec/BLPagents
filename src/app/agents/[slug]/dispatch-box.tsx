@@ -162,6 +162,7 @@ function placeholderFor(agent: AgentConfig): string {
     case "lindsay": return "What did every agent do in the last 24 hours, and what failed?";
     case "clara": return "What's on Brigham's calendar tomorrow, and what does each meeting need?";
     case "carla": return "Which vehicles have maintenance or registration due in the next 30 days?";
+    case "chris": return "What is the state of the shop this morning — queue, stalled pianos, missing stages, and what is waiting on me?";
     default: return "Describe the task in a sentence or two.";
   }
 }
