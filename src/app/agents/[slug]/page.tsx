@@ -6,11 +6,20 @@ import { api } from "@/lib/client";
 import { getAgent } from "@/lib/agents";
 import { Avatar, DOT_LABEL, ago, dotClass, type HealthMap } from "../../fleet-shared";
 import DispatchBox from "./dispatch-box";
+import MindPanel from "./mind-panel";
 
 /**
  * Agent console — renders any agent from the registry with live health
  * from the heartbeat tab plus vault-harvested mission/boundaries.
  */
+/** Vault folders that hold this agent's mind: the slug folder plus the harvested long-name folder. */
+function mindFolders(agent: NonNullable<ReturnType<typeof getAgent>>): string[] {
+  const out = [`Agents/${agent.slug}`];
+  const harvested = agent.vault?.vaultFolder;
+  if (harvested && !out.includes(harvested)) out.push(harvested);
+  return out;
+}
+
 export default function AgentConsole({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const agent = getAgent(slug);
@@ -175,24 +184,14 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
             </div>
           )}
 
-          {(agent.mindLinks?.length || agent.onMacFiles.length > 0) && (
+          <MindPanel agentName={agent.name} folders={mindFolders(agent)} />
+          {agent.mindLinks && agent.mindLinks.length > 0 && (
             <div className="card">
-              <h2>Mind &amp; memory</h2>
-              {agent.mindLinks?.map((m) => (
+              <h2>Other mind links</h2>
+              {agent.mindLinks.map((m) => (
                 <div key={m.name} style={{ padding: "7px 0", borderBottom: "1px solid var(--line-soft)" }}>
                   <a href={m.href} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>{m.name} ↗</a>
                   {m.note && <div className="muted" style={{ fontSize: 12 }}>{m.note}</div>}
-                </div>
-              ))}
-              {agent.onMacFiles.length > 0 && (
-                <div className="muted" style={{ margin: "8px 0", fontSize: 12 }}>
-                  Local copies live on the machine that runs this agent&apos;s brain:
-                </div>
-              )}
-              {agent.onMacFiles.map(([name, path]) => (
-                <div key={name} style={{ padding: "6px 0" }}>
-                  <strong style={{ fontSize: 12.5 }}>{name}</strong>
-                  <div className="mono" style={{ overflowWrap: "anywhere" }}>{path}</div>
                 </div>
               ))}
             </div>
