@@ -17,8 +17,12 @@
  * data-always   : "1" shows the face for everyone (kiosk / shared machines).
  * data-agents   : comma list of agent slugs to show (default "clara,arnold,chris").
  * data-labels   : optional "slug:Tooltip|slug:Tooltip" overrides.
+ * data-mode     : "telegram" (default) — a click opens the agent's Telegram chat
+ *                 directly (the Telegram app if installed, else web);
+ *                 "console" — opens the agent's console page in a side window.
+ * data-bots     : optional "slug:botusername|…" overrides for the Telegram map.
  *
- * Click a face → that agent's console page opens in a side window sized like a phone.
+ * Click a face → straight into a chat with that agent.
  * Nothing about the app or the user is sent anywhere; the widget only reads
  * the identity the app already stores.
  */
@@ -33,8 +37,11 @@
     try { return new URL(script.src).origin; } catch (e) { return "https://blpagents.netlify.app"; }
   })();
   var AGENTS = (ds.agents || ds.agent || "clara,arnold,chris").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
-  var LABELS = { clara: "Ask Clara — admin, scheduling, your inbox", arnold: "Ask Arnold — sales & leads", chris: "Ask Cris — the shop" };
+  var LABELS = { clara: "Message Clara — admin, scheduling, your inbox", arnold: "Message Arnold — sales & leads", chris: "Message Cris — the shop" };
   (ds.labels || "").split("|").forEach(function (pair) { var i = pair.indexOf(":"); if (i > 0) LABELS[pair.slice(0, i).trim()] = pair.slice(i + 1).trim(); });
+  var MODE = ds.mode || "telegram";
+  var BOTS = { clara: "claralarsonbot", arnold: "arnoldlarsonbot", chris: "chrislarsonbot", lindsay: "lindsaystrategistbot", carla: "carlalarsonbot" };
+  (ds.bots || "").split("|").forEach(function (pair) { var i = pair.indexOf(":"); if (i > 0) BOTS[pair.slice(0, i).trim()] = pair.slice(i + 1).trim(); });
   var ALWAYS = ds.always === "1";
   var FOR = (ds.for || "brigham@brighamlarsonpianos.com,brighamlarson@gmail.com,brighamlarsonpianos@gmail.com,brigham")
     .split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
@@ -93,7 +100,12 @@
     var tip = document.createElement("div");
     tip.className = "blpa-tip";
     tip.textContent = label;
-    btn.addEventListener("click", function () {
+    btn.addEventListener("click", function (ev) {
+      // Default: jump straight into the Telegram chat. Shift-click (or data-mode="console") opens the console page instead.
+      if (MODE === "telegram" && BOTS[slug] && !ev.shiftKey) {
+        window.open("https://t.me/" + BOTS[slug], "_blank", "noopener");
+        return;
+      }
       var url = ORIGIN + "/agents/" + slug;
       var w = 430, h = Math.min(820, Math.max(600, (window.screen && window.screen.availHeight || 800) - 80));
       var left = Math.max(0, ((window.screen && window.screen.availWidth) || 1280) - w - 40);
