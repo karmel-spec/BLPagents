@@ -21,6 +21,9 @@
  *                 directly (the Telegram app if installed, else web);
  *                 "console" — opens the agent's console page in a side window.
  * data-bots     : optional "slug:botusername|…" overrides for the Telegram map.
+ * data-dock     : optional CSS selector of an element the app owns. When it
+ *                 exists, the faces render inline inside it as a compact row
+ *                 (e.g. a sidebar footer) instead of floating over the page.
  *
  * Click a face → straight into a chat with that agent.
  * Nothing about the app or the user is sent anywhere; the widget only reads
@@ -76,7 +79,12 @@
     ".blpa-btn img{width:100%;height:100%;object-fit:cover;display:block}" +
     ".blpa-tip{position:absolute;right:62px;top:50%;transform:translateY(-50%);background:#121212;color:#fff;font:600 12.5px/1.2 -apple-system,Helvetica,Arial,sans-serif;padding:7px 10px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}" +
     ".blpa-item:hover .blpa-tip{opacity:1}" +
-    "@media (max-width:600px){.blpa-stack{right:12px;bottom:76px;gap:8px}.blpa-btn{width:46px;height:46px}.blpa-tip{display:none}}";
+    "@media (max-width:600px){.blpa-stack{right:12px;bottom:76px;gap:8px}.blpa-btn{width:46px;height:46px}.blpa-tip{display:none}}" +
+    // Docked variant: an inline row inside the host app's own element.
+    ".blpa-stack.blpa-dock{position:static;flex-direction:row;gap:8px;align-items:center;z-index:auto}" +
+    ".blpa-dock .blpa-btn{width:34px;height:34px;border-width:2px;box-shadow:none}" +
+    ".blpa-dock .blpa-tip{right:auto;left:50%;top:auto;bottom:42px;transform:translateX(-50%)}" +
+    "@media (max-width:760px){.blpa-dock .blpa-btn{width:30px;height:30px}.blpa-dock .blpa-tip{display:none}}";
 
   var style = document.createElement("style");
   style.textContent = css;
@@ -119,7 +127,14 @@
 
   function mount() {
     if (!document.body) return setTimeout(mount, 100);
-    document.body.appendChild(stack);
+    var dock = null;
+    try { dock = ds.dock ? document.querySelector(ds.dock) : null; } catch (e) { dock = null; }
+    if (dock) {
+      stack.classList.add("blpa-dock");
+      dock.appendChild(stack);
+    } else {
+      document.body.appendChild(stack);
+    }
     refresh();
     setInterval(refresh, 4000); // pick up sign-in without a reload
   }
