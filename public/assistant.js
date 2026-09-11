@@ -24,6 +24,10 @@
  * data-dock     : optional CSS selector of an element the app owns. When it
  *                 exists, the faces render inline inside it as a compact row
  *                 (e.g. a sidebar footer) instead of floating over the page.
+ * data-agents-by-user : per-person helper sets, "name:slug,slug|name:slug".
+ *                 Name = the signed-in user's first name or email local part.
+ *                 A listed person sees exactly their helpers (no data-for
+ *                 needed); anyone unlisted falls back to data-for/data-agents.
  *
  * Click a face → straight into a chat with that agent.
  * Nothing about the app or the user is sent anywhere; the widget only reads
@@ -40,10 +44,23 @@
     try { return new URL(script.src).origin; } catch (e) { return "https://blpagents.netlify.app"; }
   })();
   var AGENTS = (ds.agents || ds.agent || "clara,arnold,chris").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
-  var LABELS = { clara: "Message Clara — admin, scheduling, your inbox", arnold: "Message Arnold — sales & leads", chris: "Message Cris — the shop" };
+  var LABELS = {
+    clara: "Message Clara — admin, scheduling, your inbox", arnold: "Message Arnold — sales & leads", chris: "Message Cris — the shop",
+    ivory: "Message Ivory — tuning revenue & reactivation", melody: "Message Melody — admin & customer service",
+    marcus: "Message Marcus — marketing", lindsay: "Message Lindsay — operations, Karmel's assistant"
+  };
   (ds.labels || "").split("|").forEach(function (pair) { var i = pair.indexOf(":"); if (i > 0) LABELS[pair.slice(0, i).trim()] = pair.slice(i + 1).trim(); });
+  // Per-person helper sets: "brigham:clara,arnold,chris|lisa:ivory,arnold,chris|…"
+  var BY_USER = {};
+  (ds.agentsByUser || "").split("|").forEach(function (pair) {
+    var i = pair.indexOf(":");
+    if (i > 0) BY_USER[pair.slice(0, i).trim().toLowerCase()] = pair.slice(i + 1).split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+  });
   var MODE = ds.mode || "telegram";
-  var BOTS = { clara: "claralarsonbot", arnold: "arnoldlarsonbot", chris: "chrislarsonbot", lindsay: "lindsaystrategistbot", carla: "carlalarsonbot" };
+  var BOTS = {
+    clara: "claralarsonbot", arnold: "arnoldlarsonbot", chris: "chrislarsonbot", lindsay: "lindsaystrategistbot", carla: "carlalarsonbot",
+    ivory: "ivorylarsonbot", melody: "melodylarsonbot", marcus: "marcuslarsonbot"
+  };
   (ds.bots || "").split("|").forEach(function (pair) { var i = pair.indexOf(":"); if (i > 0) BOTS[pair.slice(0, i).trim()] = pair.slice(i + 1).trim(); });
   var ALWAYS = ds.always === "1";
   var FOR = (ds.for || "brigham@brighamlarsonpianos.com,brighamlarson@gmail.com,brighamlarsonpianos@gmail.com,brigham")
@@ -63,11 +80,22 @@
       return String(raw).toLowerCase().replace(/^"|"$/g, "");
     } catch (e) { return ""; }
   }
+  /** First name / email local part of whoever is signed in, lowercased. */
+  function userKey() {
+    var id = identity();
+    if (!id) return "";
+    return id.split("@")[0].split(/[\s._-]/)[0];
+  }
   function allowed() {
     if (ALWAYS) return true;
     var id = identity();
     if (!id) return false;
+    if (BY_USER[userKey()]) return true;
     return FOR.some(function (f) { return id === f || id.indexOf(f) === 0 || id.split("@")[0] === f; });
+  }
+  /** Which helpers this person sees: their own set if listed, else the default. */
+  function agentsFor() {
+    return BY_USER[userKey()] || AGENTS;
   }
 
   var css =
@@ -92,7 +120,11 @@
 
   var stack = document.createElement("div");
   stack.className = "blpa-stack";
-  AGENTS.forEach(function (slug) {
+  var builtFor = "";
+  function build(list) {
+    stack.innerHTML = "";
+    builtFor = list.join(",");
+    list.forEach(function (slug) {
     var label = LABELS[slug] || ("Ask " + slug.charAt(0).toUpperCase() + slug.slice(1));
     var item = document.createElement("div");
     item.className = "blpa-item";
@@ -123,7 +155,9 @@
     item.appendChild(btn);
     item.appendChild(tip);
     stack.appendChild(item);
-  });
+    });
+  }
+  build(agentsFor());
 
   function mount() {
     if (!document.body) return setTimeout(mount, 100);
@@ -139,6 +173,9 @@
     setInterval(refresh, 4000); // pick up sign-in without a reload
   }
   function refresh() {
+    // Swap the faces when a different person signs in on this device.
+    var want = agentsFor();
+    if (want.join(",") !== builtFor) build(want);
     stack.classList.toggle("show", allowed());
   }
   mount();
