@@ -45,7 +45,7 @@
     "email": "arnold@brighamlarsonpianos.com",
     "runtime": "Hermes",
     "registryStatus": "Live",
-    "crons": null,
+    "crons": "arnold-sales-briefing (8:00 AM Mon–Sat → Telegram Sales Team group)",
     "homeComputer": null,
     "telegram": "https://t.me/arnoldlarsonbot",
     "telegramActive": true
@@ -90,13 +90,13 @@
     "role": "Shop Manager",
     "department": "Shop",
     "tagline": "Shop Manager agent — profile from the BLP agent registry.",
-    "reportsTo": "Karmel",
+    "reportsTo": "Brigham (Karmel governs how he operates)",
     "accent": "#5a4632",
     "avatar": "/agents/chris.jpg",
     "email": "chris@brighamlarsonpianos.com",
     "runtime": "Hermes (agent) + Store Map web app (briefings)",
     "registryStatus": "Active",
-    "crons": "Hourly Chris Inbox Triage (every hour)",
+    "crons": "None — no scheduled jobs as of 2026-09-14 (answers on Telegram + Store Map briefings)",
     "homeComputer": "Ivorys-MacBook-Pro-2 (Karmel's Mac)",
     "telegram": "https://t.me/chrislarsonbot",
     "telegramActive": true
@@ -311,7 +311,7 @@
     "role": "Tuning Revenue Specialist",
     "department": "Fieldwork",
     "tagline": "Tuning reactivation outreach from Piano CRM; draft personalized emails/texts for overdue tuning; fill tuning schedule.",
-    "reportsTo": "Karmel",
+    "reportsTo": "Lisa (day to day) / Karmel (rules)",
     "accent": "#3f6b4f",
     "avatar": "/agents/ivory.jpg",
     "email": "ivory@brighamlarsonpianos.com",
@@ -320,7 +320,7 @@
     "crons": "Tuning confirmations (8:00 AM M–F); Google Review requests (6:01 PM M–Sa); QBO Invoice Audit (4:00 AM M–F); Drive backup (11:00 PM daily)",
     "homeComputer": null,
     "telegram": "https://t.me/ivorylarsonbot",
-    "telegramActive": false
+    "telegramActive": true
   },
   {
     "slug": "lee",
@@ -359,7 +359,7 @@
   {
     "slug": "lindsay",
     "name": "Lindsay",
-    "role": "Operations Assistant to Karmel",
+    "role": "Chief Strategy Agent (Operations Assistant to Karmel)",
     "department": "Operations",
     "tagline": "Umbrella agent for Karmel: strategy, delegation, memory, Vault writes, inbox triage, cron orchestration, ops.",
     "reportsTo": "Karmel",
@@ -379,16 +379,16 @@
     "role": "Marketing Head",
     "department": "Marketing",
     "tagline": "Marketing Head agent — profile from the BLP agent registry.",
-    "reportsTo": "Karmel",
+    "reportsTo": "Alisa (day to day) / Karmel (approval)",
     "accent": "#7a4b8f",
     "avatar": "/agents/marcus.jpg",
     "email": "marcus@brighamlarsonpianos.com",
-    "runtime": "OpenClaw",
+    "runtime": "Hermes",
     "registryStatus": "Active",
-    "crons": null,
+    "crons": "marcus-marketing-briefing (8:30 AM Mon–Sat → Telegram to Karmel)",
     "homeComputer": null,
     "telegram": "https://t.me/marcuslarsonbot",
-    "telegramActive": false
+    "telegramActive": true
   },
   {
     "slug": "melody",
@@ -400,9 +400,9 @@
     "accent": "#33526e",
     "avatar": "/agents/melody.jpg",
     "email": "melody@brighamlarsonpianos.com",
-    "runtime": "OpenClaw",
+    "runtime": "Hermes",
     "registryStatus": "Active",
-    "crons": null,
+    "crons": "Melody: Monday inbox mini-proposals (8:30 AM Mon → Google Doc emailed to Karmel cc Brigham)",
     "homeComputer": null,
     "telegram": "https://t.me/melodylarsonbot",
     "telegramActive": true
