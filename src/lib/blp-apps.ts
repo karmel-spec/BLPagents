@@ -1,6 +1,7 @@
 /** Quick switcher to the other BLP webapps (same list as the Super-CRM). */
 export const BLP_APPS = [
   { name: "Agent Console", url: "/", note: "this app" },
+  { name: "Marketing App", url: "https://blpmarketing.netlify.app", note: "Marcus, scorecard, inventory marketing" },
   { name: "CRM", url: "https://brighamlarsonpianos.org", note: "clients & leads" },
   { name: "Sales App", url: "https://blpsalesapp.netlify.app", note: "leads & follow-ups" },
   { name: "US Sales Map", url: "https://blpsalesapp.netlify.app/map", note: "lead map" },
