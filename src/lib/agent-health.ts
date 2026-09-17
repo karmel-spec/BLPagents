@@ -16,6 +16,8 @@ const HEADER = ["agent", "machine", "reported_at", "online", "crons_json", "note
 const FRESH_MS = 45 * 60 * 1000;
 /** An enabled cron whose next run is this far in the past has missed a run. */
 const MISSED_MS = 30 * 60 * 1000;
+/** A stale machine row older than this is treated as a retired hostname when a fresh row exists. */
+const RETIRED_MS = 3 * 24 * 60 * 60 * 1000;
 
 export interface HeartbeatCron {
   name: string;
@@ -141,6 +143,13 @@ export async function readAgentHealth(): Promise<Record<string, AgentHealth>> {
       out[slug] = piece;
       continue;
     }
+    // A machine row that has been silent for days is a retired hostname
+    // (renamed Mac, DHCP domain flip, decommissioned box), not an outage.
+    // When the agent has a fresh heartbeat elsewhere, the retired row must
+    // not drag it to "attention"; keep only the row that is alive.
+    const retired = (p: AgentHealth) => !p.fresh && (Number.isNaN(Date.parse(p.reportedAt)) || now - Date.parse(p.reportedAt) > RETIRED_MS);
+    if (piece.fresh && retired(prev)) { out[slug] = piece; continue; }
+    if (prev.fresh && retired(piece)) { continue; }
     // Merge multi-machine agents: any fresh heartbeat keeps them on the
     // board; issues accumulate with machine tags; counts sum.
     out[slug] = {

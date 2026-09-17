@@ -195,7 +195,17 @@ for (const [slug, crons] of bySlug) {
 }
 
 // ---- report ----
-const payload = { machine: os.hostname().replace(/\.local$/, ""), agents };
+/** Stable machine name: BLP_MACHINE env → macOS LocalHostName (does not change
+ *  with DHCP/router domains the way os.hostname() does, e.g. "MacBookPro.home") → os.hostname(). */
+function machineName() {
+  if (process.env.BLP_MACHINE) return process.env.BLP_MACHINE.trim();
+  try {
+    const n = execSync("scutil --get LocalHostName", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+    if (n) return n;
+  } catch { /* not macOS */ }
+  return os.hostname().replace(/\.local$/, "");
+}
+const payload = { machine: machineName(), agents };
 const res = await fetch(`${APP_URL}/api/agents/heartbeat`, {
   method: "POST",
   headers: { "Content-Type": "application/json", "x-blp-key": key() },
