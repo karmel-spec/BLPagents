@@ -9,6 +9,7 @@ export const BLP_APPS = [
   { name: "Price Tag Maker", url: "https://blppricetags.netlify.app", note: "showroom tags" },
   { name: "Piano Log", url: "https://pianologapp.netlify.app", note: "inventory" },
   { name: "Admin Training", url: "https://blpadmintraining.netlify.app", note: "admin curriculum & scorecard" },
+  { name: "Tuning Academy", url: "https://blptuningtraining.netlify.app", note: "tuning training" },
   { name: "Store Map", url: "https://blpstoremap.netlify.app", note: "floor slots" },
   { name: "PTL", url: "https://pianotechnologylibrary.com", note: "Piano Technology Library" },
   { name: "BLP Website", url: "https://www.brighamlarsonpianos.com", note: "brighamlarsonpianos.com" },
