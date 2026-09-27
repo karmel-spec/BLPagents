@@ -2,6 +2,7 @@
 export const BLP_APPS = [
   { name: "Agent Console", url: "/", note: "this app" },
   { name: "Marketing App", url: "https://blpmarketing.netlify.app", note: "Marcus, scorecard, inventory marketing" },
+  { name: "Movers App", url: "https://blpmovers.netlify.app", note: "moving crew board, live ETA, condition reports" },
   { name: "CRM", url: "https://brighamlarsonpianos.org", note: "clients & leads" },
   { name: "Client Portal", url: "https://blpclientportal.netlify.app", note: "shop-work clients" },
   { name: "Sales App", url: "https://blpsalesapp.netlify.app", note: "leads & follow-ups" },
