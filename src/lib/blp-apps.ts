@@ -3,6 +3,7 @@ export const BLP_APPS = [
   { name: "Agent Console", url: "/", note: "this app" },
   { name: "Marketing App", url: "https://blpmarketing.netlify.app", note: "Marcus, scorecard, inventory marketing" },
   { name: "CRM", url: "https://brighamlarsonpianos.org", note: "clients & leads" },
+  { name: "Client Portal", url: "https://blpclientportal.netlify.app", note: "shop-work clients" },
   { name: "Sales App", url: "https://blpsalesapp.netlify.app", note: "leads & follow-ups" },
   { name: "US Sales Map", url: "https://blpsalesapp.netlify.app/map", note: "lead map" },
   { name: "Shop App", url: "https://brighamlarsonpianos.tech", note: "shop reports" },
