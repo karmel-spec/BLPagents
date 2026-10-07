@@ -14,6 +14,10 @@ type Msg = { id?: number; role: "user" | "agent"; who?: string; body: string; cr
 const stamp = (iso?: string) => (iso ? new Date(iso) : new Date()).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
 const QUICK: Record<string, string[]> = {
+  clara: ["What's on Brigham's plate this week according to your sources?", "Which inbox cleanup rules are approved and which are still proposals?", "Suggest three customer engagement ideas for this month."],
+  chris: ["What's at the front of the shop queue and what's it waiting on?", "Which pianos are stuck in a phase longer than the time standard?", "Find the piano for the customer I name next."],
+  marcus: ["Which for-sale pianos deserve a post this week and why?", "Write a KSL listing for the piano I name next.", "What does our brand voice guide say about pricing in posts?"],
+  ivory: ["What's open on your TODO list right now?", "Walk me through the scheduling and intake playbook in five lines.", "Look up the customer I name next."],
   arnold: [
     "What should Brigham's top three follow-ups be right now?",
     "Which leads reached out and are still waiting on us?",

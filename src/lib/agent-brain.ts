@@ -35,6 +35,30 @@ export const MINDS: Record<string, { core: string[]; folders: string[]; tools: s
     intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand, look leads up in the Sales Console, and save drafts there for a rep to approve — you can never send anything to a customer.",
   },
 };
+MINDS.clara = {
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/clara/SOUL.md", "Agents/clara/STATUS.md", "Agents/clara/BRIEF_SOURCES.md", "Agents/clara/INBOX_CLEANUP.md", "Agents/clara/ENGAGEMENT_IDEAS.md", "Agents/clara/TRAINING_PLAN.md"],
+  folders: ["Agents/clara", "kb"],
+  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead"],
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand and look up customers in the Sales Console. You cannot read or send email from here — if something needs Brigham's inbox, say so and describe what you'd do.",
+};
+MINDS.chris = {
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/chris/SOUL.md", "Agents/chris/SHOP_SOURCES.md", "Agents/chris/KB/INDEX.md", "Agents/chris/KB/domain-notes-and-roster.md", "Agents/chris/KB/phase-time-standards.md", "Agents/chris/KB/training-and-timeclock.md", "Agents/chris/KB/store-map-readme.md"],
+  folders: ["Agents/chris", "Agents/chris/KB", "kb"],
+  tools: ["read_vault_file", "list_vault_folder", "search_shop_pianos"],
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, often a shop manager. You can read any vault file on demand and look pianos up on the live Store Map (phase, location, queue, notes). You can't move pianos or change phases from here — say what to do in the Store Map instead.",
+};
+MINDS.marcus = {
+  core: ["AGENTS.md", "AGENT_STYLE.md", "Agents/marcus/SOUL.md", "Agents/marcus/AGENTS.md", "Agents/marcus/IDENTITY.md", "Agents/marcus/MEMORY.md", "Agents/marcus/STATUS.md", "Agents/marcus/LESSONS.md", "Agents/marcus/kb/KB001-brand-voice.md", "Agents/marcus/kb/KB002-youtube-strategy.md", "Agents/marcus/kb/KB003-social-platforms.md", "Agents/marcus/kb/KB004-content-templates.md", "Agents/marcus/kb/KB005-marketing-metrics.md", "Agents/marcus/kb/KB006-lead-sources.md", "Agents/marcus/kb/KB007-marketing-engine-app.md"],
+  folders: ["Agents/marcus", "Agents/marcus/kb", "kb"],
+  tools: ["read_vault_file", "list_vault_folder", "search_shop_pianos"],
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram or the Marketing app. The person typing is a BLP teammate. You can read any vault file on demand and look up for-sale pianos on the live Store Map (price, location, status). Copy you write here is for the person to paste or file in the Marketing app's Approvals — nothing publishes from this chat.",
+};
+MINDS.ivory = {
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/ivory/SOUL.md", "Agents/ivory/AGENTS.md", "Agents/ivory/IDENTITY.md", "Agents/ivory/USER.md", "Agents/ivory/TOOLS.md", "Agents/ivory/STATUS.md", "Agents/ivory/TODO.md", "Agents/ivory/MEMORY.md", "Agents/ivory/kb/INDEX.md", "Agents/ivory/kb/coaching-feedback.md", "Agents/ivory/kb/KB006 — Scheduling & Intake Playbook (Brigham + Karmel).md"],
+  folders: ["Agents/ivory", "Agents/ivory/kb", "kb"],
+  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead"],
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand and look up customers in the Sales Console. Your scheduled jobs and scripts don't run from this chat — describe what they would do and where they live.",
+};
 export const chatEnabled = (slug: string) => Boolean(MINDS[slug]);
 
 // ---------------------------------------------------------------- mind (vault)
@@ -61,6 +85,7 @@ const TOOL_DEFS: Record<string, { name: string; description: string; input_schem
   list_vault_folder: { name: "list_vault_folder", description: "List files in a vault folder, e.g. 'kb' or 'Agents/arnold/kb'.", input_schema: { type: "object", properties: { path: { type: "string" } }, required: ["path"] } },
   search_leads: { name: "search_leads", description: "Find leads in the Sales Console by name, phone, email or headline text. Returns up to 10 compact matches with ids.", input_schema: { type: "object", properties: { query: { type: "string" }, status: { type: "string", description: "optional statusBucket filter: new|active|snoozed|dormant|won|lost" } }, required: ["query"] } },
   lookup_lead: { name: "lookup_lead", description: "Full detail for one lead (contact, notes, timeline of texts/emails/calls, pending drafts) by its id from search_leads.", input_schema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
+  search_shop_pianos: { name: "search_shop_pianos", description: "Look pianos up on the live Store Map (the Piano Log): serial, make/model, owner, location/slot, shop phase and phases done, queue position, track, price, wait/phase notes. Query matches serial, summary, owner or location; empty query = the shop queue in order.", input_schema: { type: "object", properties: { query: { type: "string" }, limit: { type: "number" } } } },
   save_drafts: { name: "save_drafts", description: "Save follow-up drafts on a lead in the Sales Console for a rep to approve and send (the only write you may do). Never claims to have sent anything.", input_schema: { type: "object", properties: { leadId: { type: "string" }, drafts: { type: "array", items: { type: "object", properties: { channel: { type: "string", enum: ["sms", "email"] }, subject: { type: "string" }, body: { type: "string" }, note: { type: "string" } }, required: ["channel", "body"] } } }, required: ["leadId", "drafts"] } },
 };
 
@@ -97,6 +122,18 @@ async function runTool(name: string, input: Record<string, unknown>): Promise<st
       const l = j.lead;
       const tl = (l.timeline as { at: string; who: string; kind: string; text: string }[] | undefined) || [];
       return JSON.stringify({ ...compactLead(l), address: l.address, source: l.source, inquiryMethod: l.inquiryMethod, notes: l.notes, activityTimeline: s(l.activityTimeline).slice(0, 3000), closedBy: l.closedBy, timeline: tl.slice(-40).map((e) => ({ at: e.at, who: e.who, kind: e.kind, text: s(e.text).slice(0, 600) })), drafts: l.drafts });
+    }
+    if (name === "search_shop_pianos") {
+      const r = await fetch("https://blpstoremap.netlify.app/api/data?scope=active", { signal: AbortSignal.timeout(25000), cache: "no-store" });
+      if (!r.ok) return `Store Map data ${r.status}`;
+      const j = (await r.json()) as { pianos: Record<string, unknown>[] };
+      const q = s(input.query).toLowerCase().trim();
+      const lim = Math.min(40, Math.max(1, Number(input.limit) || 15));
+      const hay = (p: Record<string, unknown>) => [p.serial, p.summary, p.owner, p.location, p.make, p.model, p.phase, p.section].map(s).join(" | ").toLowerCase();
+      let list = (j.pianos || []).filter((p) => p.active !== false);
+      list = q ? list.filter((p) => hay(p).includes(q)) : list.filter((p) => Number(p.queuePos) > 0).sort((a, b) => Number(a.queuePos) - Number(b.queuePos));
+      const out = list.slice(0, lim).map((p) => ({ serial: p.serial, piano: p.summary, owner: p.owner, location: p.location, section: p.section, phase: p.phase, phasesDone: p.phasesDone, queue: p.queuePos ? `${p.queuePos}/${p.queueTotal}` : "", track: p.track, price: p.price, status: p.status, waitNote: p.waitNote, phaseNotes: s(p.phaseNotes).slice(0, 300), scopeNotes: s(p.scopeNotes).slice(0, 300) }));
+      return out.length ? JSON.stringify(out) : "No pianos match.";
     }
     if (name === "save_drafts") {
       const r = await fetch(`${SALES_APP}/api/arnold/draft`, { method: "POST", headers: { "x-blp-key": SALES_KEY, "content-type": "application/json" }, body: JSON.stringify({ leadId: s(input.leadId), drafts: input.drafts }), signal: AbortSignal.timeout(20000) });
