@@ -7,6 +7,7 @@ import { getAgent } from "@/lib/agents";
 import { Avatar, DOT_LABEL, ago, dotClass, type HealthMap } from "../../fleet-shared";
 import DispatchBox from "./dispatch-box";
 import MindPanel from "./mind-panel";
+import ChatPanel from "./chat-panel";
 
 /**
  * Agent console — renders any agent from the registry with live health
@@ -78,6 +79,8 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
       )}
 
       <div className="banner info">{agent.tagline}</div>
+
+      <ChatPanel agent={agent} />
 
       <DispatchBox agent={agent} />
 

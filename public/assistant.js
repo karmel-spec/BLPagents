@@ -141,7 +141,17 @@
     tip.className = "blpa-tip";
     tip.textContent = label;
     btn.addEventListener("click", function (ev) {
-      // Default: jump straight into the Telegram chat. Shift-click (or data-mode="console") opens the console page instead.
+      // Agents with an in-app chat (vault-backed, no Hermes) open their chat popup; the rest go to Telegram.
+      // Shift-click (or data-mode="console") opens the console page instead.
+      var CHAT = { arnold: true };
+      if (CHAT[slug] && !ev.shiftKey) {
+        var curl = ORIGIN + "/agents/" + slug + "/chat";
+        var cw = 460, ch = Math.min(820, Math.max(600, (window.screen && window.screen.availHeight || 800) - 80));
+        var cleft = Math.max(0, ((window.screen && window.screen.availWidth) || 1280) - cw - 40);
+        var cwin = window.open(curl, "blp-chat-" + slug, "popup=yes,width=" + cw + ",height=" + ch + ",left=" + cleft + ",top=40");
+        if (!cwin) window.open(curl, "_blank");
+        return;
+      }
       if (MODE === "telegram" && BOTS[slug] && !ev.shiftKey) {
         window.open("https://t.me/" + BOTS[slug], "_blank", "noopener");
         return;
