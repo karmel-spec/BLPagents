@@ -11,12 +11,17 @@
     "sync-registry": "node scripts/sync-registry.mjs"
   },
   "dependencies": {
+    "imapflow": "^2.2.10",
+    "mailparser": "^3.9.36",
     "next": "^15.3.3",
+    "nodemailer": "^6.10.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@types/mailparser": "^3.9.0",
     "@types/node": "^22.15.0",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "typescript": "^5.8.0"

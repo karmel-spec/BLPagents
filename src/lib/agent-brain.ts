@@ -13,6 +13,15 @@
 import { getFile, listDir, vaultConfigured } from "./vault-github";
 import { supa, supaConfigured } from "./supa";
 import { config } from "./config";
+import { backendFor, createFilter, forwardInternal, getMessage, labelAndArchive, mailboxConfigured, searchMail, unsubscribe } from "./mail";
+import { markExecuted, requireApproval } from "./agent-approvals";
+
+/** Which mailboxes each agent may open (its own credential, per AGENT_ARCHITECTURE Rule 1). */
+const MAILBOXES: Record<string, string[]> = {
+  clara: ["brigham@brighamlarsonpianos.com", "brighamlarson@gmail.com"],
+  melody: ["info@brighamlarsonpianos.com", "karmel@brighamlarsonpianos.com"],
+};
+const MAIL_TOOLS = ["search_mail", "read_message", "archive_mail", "create_mail_filter", "unsubscribe_sender", "forward_to_teammate"];
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || "";
 const MODEL = process.env.AGENT_MODEL || "claude-sonnet-5-5";
@@ -38,7 +47,7 @@ export const MINDS: Record<string, { core: string[]; folders: string[]; tools: s
 MINDS.clara = {
   core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/clara/SOUL.md", "Agents/clara/STATUS.md", "Agents/clara/BRIEF_SOURCES.md", "Agents/clara/INBOX_CLEANUP.md", "Agents/clara/ENGAGEMENT_IDEAS.md", "Agents/clara/TRAINING_PLAN.md"],
   folders: ["Agents/clara", "kb"],
-  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead"],
+  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", ...MAIL_TOOLS],
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand and look up customers in the Sales Console. You cannot read or send email from here — if something needs Brigham's inbox, say so and describe what you'd do.",
 };
 MINDS.chris = {
@@ -103,8 +112,59 @@ export async function allLeads(): Promise<Record<string, unknown>[]> {
 const s = (v: unknown) => (v == null ? "" : String(v));
 export const compactLead = (l: Record<string, unknown>) => ({ id: l.id, name: l.name, status: l.status, statusBucket: l.statusBucket, rep: l.effectiveRep, headline: l.headline, leadType: l.leadType, pianoType: l.pianoType, value: l.value, phone: l.phoneDialable, email: l.emailClean, lastContact: l.lastContact, daysSinceContact: l.daysSinceContact, score: l.score });
 
-async function runTool(name: string, input: Record<string, unknown>): Promise<string> {
+const APPROVAL_INPUT = { proposal: { type: "string", description: "approved proposal file name, e.g. '2026-09-10 proposal.md'" }, row: { type: "number", description: "the approved row number" } };
+Object.assign(TOOL_DEFS, {
+  search_mail: { name: "search_mail", description: "Search one of your mailboxes (read-only). Gmail query syntax for Workspace mailboxes; for personal Gmail use is:unread, newer_than:Nd, from:, subject:. Returns up to `max` compact hits (id, from, subject, date, unread, labels).", input_schema: { type: "object", properties: { mailbox: { type: "string" }, query: { type: "string" }, max: { type: "number" } }, required: ["mailbox", "query"] } },
+  read_message: { name: "read_message", description: "Read one message's headers (From, Reply-To, List-Unsubscribe, List-Unsubscribe-Post…) and the first part of its text. Read-only.", input_schema: { type: "object", properties: { mailbox: { type: "string" }, id: { type: "string" } }, required: ["mailbox", "id"] } },
+  archive_mail: { name: "archive_mail", description: "APPROVED ROWS ONLY. Add a label and/or remove messages from the inbox (archive — never trash). Requires the approved proposal + row number.", input_schema: { type: "object", properties: { mailbox: { type: "string" }, ids: { type: "array", items: { type: "string" } }, addLabel: { type: "string" }, archive: { type: "boolean" }, ...APPROVAL_INPUT }, required: ["mailbox", "ids", "proposal", "row"] } },
+  create_mail_filter: { name: "create_mail_filter", description: "APPROVED ROWS ONLY. Create a Gmail filter (label and/or skip inbox, optional forward to a BLP mailbox) — Workspace mailboxes only; personal Gmail cannot (say 'Manual — Brigham').", input_schema: { type: "object", properties: { mailbox: { type: "string" }, query: { type: "string" }, addLabel: { type: "string" }, archive: { type: "boolean" }, forwardTo: { type: "string" }, ...APPROVAL_INPUT }, required: ["mailbox", "query", "proposal", "row"] } },
+  unsubscribe_sender: { name: "unsubscribe_sender", description: "APPROVED ROWS ONLY. Unsubscribe using exactly the message's own List-Unsubscribe header (one-click POST, single GET, or — personal Gmail only — one empty mailto email). Never a reply. Returns the HTTP status; anything not 2xx/confirmed is 'manual — Brigham'.", input_schema: { type: "object", properties: { mailbox: { type: "string" }, id: { type: "string", description: "a message id from that sender" }, ...APPROVAL_INPUT }, required: ["mailbox", "id", "proposal", "row"] } },
+  forward_to_teammate: { name: "forward_to_teammate", description: "APPROVED ROWS ONLY. Forward one message to a BLP mailbox (@brighamlarsonpianos.com) with a one-line note. Never to anyone outside BLP.", input_schema: { type: "object", properties: { mailbox: { type: "string" }, id: { type: "string" }, to: { type: "string" }, note: { type: "string" }, ...APPROVAL_INPUT }, required: ["mailbox", "id", "to", "proposal", "row"] } },
+});
+
+interface ToolCtx { slug: string; jobId?: number }
+function ownMailbox(ctx: ToolCtx, mailbox: string): string {
+  const mb = s(mailbox).toLowerCase();
+  if (!(MAILBOXES[ctx.slug] || []).includes(mb)) throw new Error(`${ctx.slug} may not open ${mb} — allowed: ${(MAILBOXES[ctx.slug] || []).join(", ") || "none"}`);
+  const c = mailboxConfigured(mb);
+  if (!c.ok) throw new Error(c.why || "mailbox not configured");
+  backendFor(mb);
+  return mb;
+}
+
+async function runTool(name: string, input: Record<string, unknown>, ctx: ToolCtx = { slug: "" }): Promise<string> {
   try {
+    if (name === "search_mail") {
+      const mb = ownMailbox(ctx, s(input.mailbox));
+      const hits = await searchMail(mb, s(input.query), Number(input.max) || 25);
+      return hits.length ? JSON.stringify(hits.map((h) => ({ id: h.id, date: h.date.slice(0, 16), from: h.from, subject: h.subject, unread: h.unread, labels: h.labels.filter((l) => !/^CATEGORY_/.test(l)) }))) : "No messages match.";
+    }
+    if (name === "read_message") {
+      const mb = ownMailbox(ctx, s(input.mailbox));
+      const m = await getMessage(mb, s(input.id));
+      return JSON.stringify({ ...m, text: m.text.slice(0, 2500) });
+    }
+    if (name === "archive_mail" || name === "create_mail_filter" || name === "unsubscribe_sender" || name === "forward_to_teammate") {
+      const mb = ownMailbox(ctx, s(input.mailbox));
+      const a = await requireApproval(ctx.slug, mb, s(input.proposal), Number(input.row));
+      let result = "";
+      if (name === "archive_mail") {
+        const ids = Array.isArray(input.ids) ? (input.ids as unknown[]).map(s) : [];
+        const r = await labelAndArchive(mb, ids, { addLabel: input.addLabel ? s(input.addLabel) : undefined, archive: input.archive !== false });
+        result = `${r.changed} messages ${input.archive !== false ? "archived" : "labeled"}${input.addLabel ? ` + label "${s(input.addLabel)}"` : ""}`;
+      } else if (name === "create_mail_filter") {
+        const r = await createFilter(mb, s(input.query), { addLabel: input.addLabel ? s(input.addLabel) : undefined, archive: input.archive !== false, forwardTo: input.forwardTo ? s(input.forwardTo) : undefined });
+        result = `filter ${r.id} created for '${s(input.query)}'`;
+      } else if (name === "unsubscribe_sender") {
+        const r = await unsubscribe(mb, s(input.id), backendFor(mb) === "imap");
+        result = `unsubscribe ${r.method}: ${r.status} (${r.detail})`;
+      } else {
+        await forwardInternal(mb, s(input.id), s(input.to), s(input.note || "Forwarded by Clara per approved cleanup row."));
+        result = `forwarded message ${s(input.id)} to ${s(input.to)}`;
+      }
+      await markExecuted(a.id, ctx.jobId, result);
+      return `Row ${a.row_no} (${a.proposal}, approved by ${a.approved_by}): ${result}. Log this line in inbox-cleanup/LOG.md.`;
+    }
     if (name === "read_vault_file") { const f = await getFile(s(input.path)); return f ? f.content.slice(0, 60000) : `Not found: ${s(input.path)}`; }
     if (name === "list_vault_folder") { const e = await listDir(s(input.path)); return e ? e.map((x) => `${x.type === "dir" ? "📁" : "📄"} ${x.path}${x.type === "file" ? ` (${x.size} bytes)` : ""}`).join("\n") : `No folder: ${s(input.path)}`; }
     if (name === "search_leads") {
@@ -232,7 +292,7 @@ export async function askAgent(slug: string, who: string, whoEmail: string, mess
     if (!uses.length || out.stop_reason !== "tool_use") { reply = text; break; }
     merged.push({ role: "assistant", content: out.content });
     const results = [];
-    for (const u of uses) { used.push(u.name || ""); results.push({ type: "tool_result", tool_use_id: u.id, content: (await runTool(u.name || "", u.input || {})).slice(0, 80000) }); }
+    for (const u of uses) { used.push(u.name || ""); results.push({ type: "tool_result", tool_use_id: u.id, content: (await runTool(u.name || "", u.input || {}, { slug, jobId })).slice(0, 80000) }); }
     merged.push({ role: "user", content: results });
     if (text) reply = text;
   }
