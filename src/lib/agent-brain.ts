@@ -193,6 +193,6 @@ export async function runJob(id: number): Promise<Job | null> {
 }
 /** Fire the Netlify background function (returns 202 at once; it runs up to 15 min). */
 export async function kickBackground(id: number): Promise<void> {
-  const r = await fetch(`${config.publicBaseUrl.replace(/\/$/, "")}/.netlify/functions/agent-chat-run-background`, { method: "POST", headers: { "content-type": "application/json", "x-blp-key": config.accessKey }, body: JSON.stringify({ jobId: id }) });
-  if (r.status >= 300) throw new Error(`Background run failed to start (${r.status})`);
+  const r = await fetch(`${config.publicBaseUrl.replace(/\/$/, "")}/.netlify/functions/agent-chat-run-background`, { method: "POST", redirect: "manual", headers: { "content-type": "application/json", "x-blp-key": config.accessKey }, body: JSON.stringify({ jobId: id }) });
+  if (r.status >= 300) throw new Error(`Background run failed to start (${r.status}${r.status < 400 ? " redirect — middleware is gating the function path" : ""})`);
 }

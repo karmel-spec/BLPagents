@@ -15,6 +15,7 @@ export function middleware(req: NextRequest) {
     pathname === "/login" ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/agents/heartbeat") ||
+    pathname.startsWith("/.netlify") || // background functions authenticate with the team key themselves
     pathname.startsWith("/_next");
   if (open) return NextResponse.next();
 
