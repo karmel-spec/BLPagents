@@ -251,7 +251,7 @@ export interface JobPayload {
   /** Who/what asked for a manual task run. */
   requestedBy?: string;
 }
-export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; status?: string; telegramMessageIds?: number[]; vaultCommit?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
+export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; summary?: string; telegramMessageIds?: number[]; vaultCommit?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
 
 export const onNetlify = () => Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
 
@@ -286,7 +286,7 @@ export async function runJob(id: number): Promise<Job | null> {
       const channelNote = `You are chatting on Telegram as the bot @${me?.username || `${job.agent}larsonbot`}, ${where}. The person who wrote to you is a BLP teammate. Telegram shows plain text with light formatting: no tables, keep bullets short.`;
       result = await askAgent(job.agent, job.who, job.who_email, String(job.payload?.message || ""), id, { via: "telegram", channelNote, meta: { telegramChat: String(t.chatId) } });
       try { result.telegramMessageIds = await sendMessage(job.agent, t.chatId, result.reply || "…", { replyTo: t.chatType === "private" ? undefined : t.messageId }); }
-      catch (e) { result.status = `reply not delivered: ${e instanceof Error ? e.message : String(e)}`; }
+      catch (e) { result.summary = `reply not delivered: ${e instanceof Error ? e.message : String(e)}`; }
     } else {
       result = await askAgent(job.agent, job.who, job.who_email, String(job.payload?.message || ""), id);
     }

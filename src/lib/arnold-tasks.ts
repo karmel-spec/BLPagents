@@ -54,8 +54,12 @@ export function denver(d = new Date()): { hour: number; minute: number; day: num
 }
 const isDst = (d: Date) => /MDT|GMT-6/.test(new Intl.DateTimeFormat("en-US", { timeZone: TZ, timeZoneName: "short" }).format(d));
 
+/** Kill switch: ARNOLD_SCHEDULE_PAUSED=1 on Netlify stops the scheduler from starting tasks (manual runs still work). */
+export const schedulePaused = () => /^(1|true|yes|on)$/i.test(process.env.ARNOLD_SCHEDULE_PAUSED || "");
+
 /** Tasks due for a scheduler tick (ticks land at :00 and :30; allow a few minutes of drift). */
 export function dueTasks(at = new Date()): TaskDef[] {
+  if (schedulePaused()) return [];
   const { hour, minute, day } = denver(at);
   return Object.values(TASKS).filter((t) => t.days.includes(day) && t.times.some((x) => x.hour === hour && Math.abs(x.minute - minute) <= 4));
 }
@@ -181,7 +185,7 @@ async function runTask(job: Job): Promise<NonNullable<Job["result"]>> {
   } catch (e) {
     ok = false; status = `failed: ${(e instanceof Error ? e.message : String(e)).slice(0, 140)}`;
   }
-  const result: NonNullable<Job["result"]> = { reply, tools, status };
+  const result: NonNullable<Job["result"]> = { reply, tools };
   if (ok && t.postToTeam && reply) {
     if (telegramConfigured(AGENT) && teamChatId()) {
       try { result.telegramMessageIds = await sendMessage(AGENT, teamChatId(), reply); }
@@ -189,9 +193,9 @@ async function runTask(job: Job): Promise<NonNullable<Job["result"]>> {
     } else status += " · not posted to Telegram (TELEGRAM_BOT_TOKEN_ARNOLD / TELEGRAM_CHAT_ID unset)";
   }
   try { result.vaultCommit = (await writeVaultStatus(taskId, status, job.id, ok)) || undefined; }
-  catch (e) { result.status = `${status} · vault STATUS not written: ${(e instanceof Error ? e.message : String(e)).slice(0, 80)}`; }
+  catch (e) { status += ` · vault STATUS not written: ${(e instanceof Error ? e.message : String(e)).slice(0, 80)}`; }
   if (!ok) throw new Error(status);
-  result.status = result.status || status;
+  result.summary = status;
   return result;
 }
 registerTaskRunner(runTask);

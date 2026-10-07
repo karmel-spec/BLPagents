@@ -5,7 +5,7 @@
  * in Utah whether it's MDT or MST. Each task becomes a background job; this
  * function itself finishes in a second or two.
  */
-import { dueTasks, denver, startTask } from "../../src/lib/arnold-tasks";
+import { dueTasks, denver, schedulePaused, startTask } from "../../src/lib/arnold-tasks";
 
 export default async (req: Request) => {
   const { next_run } = (await req.json().catch(() => ({}))) as { next_run?: string };
@@ -16,7 +16,7 @@ export default async (req: Request) => {
     try { const job = await startTask(t.id, "Scheduler"); started.push({ task: t.id, jobId: job?.id }); }
     catch (e) { started.push({ task: t.id, error: e instanceof Error ? e.message : String(e) }); }
   }
-  console.log(`[arnold-scheduler] ${now.stamp} due=${due.map((t) => t.id).join(",") || "none"} started=${JSON.stringify(started)} next=${next_run || "?"}`);
+  console.log(`[arnold-scheduler] ${now.stamp} paused=${schedulePaused()} due=${due.map((t) => t.id).join(",") || "none"} started=${JSON.stringify(started)} next=${next_run || "?"}`);
   return new Response(JSON.stringify({ now: now.stamp, due: due.map((t) => t.id), started }), { headers: { "content-type": "application/json" } });
 };
 
