@@ -86,11 +86,12 @@ const TOOL_DEFS: Record<string, { name: string; description: string; input_schem
   search_leads: { name: "search_leads", description: "Find leads in the Sales Console by name, phone, email or headline text. Returns up to 10 compact matches with ids.", input_schema: { type: "object", properties: { query: { type: "string" }, status: { type: "string", description: "optional statusBucket filter: new|active|snoozed|dormant|won|lost" } }, required: ["query"] } },
   lookup_lead: { name: "lookup_lead", description: "Full detail for one lead (contact, notes, timeline of texts/emails/calls, pending drafts) by its id from search_leads.", input_schema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
   search_shop_pianos: { name: "search_shop_pianos", description: "Look pianos up on the live Store Map (the Piano Log): serial, make/model, owner, location/slot, shop phase and phases done, queue position, track, price, wait/phase notes. Query matches serial, summary, owner or location; empty query = the shop queue in order.", input_schema: { type: "object", properties: { query: { type: "string" }, limit: { type: "number" } } } },
+  save_top_ten: { name: "save_top_ten", description: "TASK MODE ONLY. Save the day's ranked Top Ten (leads a human should reach TODAY) to the Sales Console so Brigham's screen shows it. Call once per morning brief with exactly the ranked list you report.", input_schema: { type: "object", properties: { items: { type: "array", items: { type: "object", properties: { rank: { type: "number" }, leadId: { type: "string" }, leadName: { type: "string" }, reason: { type: "string", description: "one line: why today + next move" } }, required: ["rank", "leadId", "leadName", "reason"] } } }, required: ["items"] } },
   save_drafts: { name: "save_drafts", description: "Save follow-up drafts on a lead in the Sales Console for a rep to approve and send (the only write you may do). Never claims to have sent anything.", input_schema: { type: "object", properties: { leadId: { type: "string" }, drafts: { type: "array", items: { type: "object", properties: { channel: { type: "string", enum: ["sms", "email"] }, subject: { type: "string" }, body: { type: "string" }, note: { type: "string" } }, required: ["channel", "body"] } } }, required: ["leadId", "drafts"] } },
 };
 
 let leadsCache: { at: number; leads: Record<string, unknown>[] } | null = null;
-async function allLeads(): Promise<Record<string, unknown>[]> {
+export async function allLeads(): Promise<Record<string, unknown>[]> {
   if (leadsCache && Date.now() - leadsCache.at < 60_000) return leadsCache.leads;
   if (!SALES_KEY) throw new Error("BLP_ARNOLD_ACCESS_KEY not set — the console can't read the Sales Console");
   const r = await fetch(`${SALES_APP}/api/leads`, { headers: { "x-blp-key": SALES_KEY }, signal: AbortSignal.timeout(25000), cache: "no-store" });
@@ -100,7 +101,7 @@ async function allLeads(): Promise<Record<string, unknown>[]> {
   return leadsCache.leads;
 }
 const s = (v: unknown) => (v == null ? "" : String(v));
-const compactLead = (l: Record<string, unknown>) => ({ id: l.id, name: l.name, status: l.status, statusBucket: l.statusBucket, rep: l.effectiveRep, headline: l.headline, leadType: l.leadType, pianoType: l.pianoType, value: l.value, phone: l.phoneDialable, email: l.emailClean, lastContact: l.lastContact, daysSinceContact: l.daysSinceContact, score: l.score });
+export const compactLead = (l: Record<string, unknown>) => ({ id: l.id, name: l.name, status: l.status, statusBucket: l.statusBucket, rep: l.effectiveRep, headline: l.headline, leadType: l.leadType, pianoType: l.pianoType, value: l.value, phone: l.phoneDialable, email: l.emailClean, lastContact: l.lastContact, daysSinceContact: l.daysSinceContact, score: l.score });
 
 async function runTool(name: string, input: Record<string, unknown>): Promise<string> {
   try {
@@ -135,6 +136,13 @@ async function runTool(name: string, input: Record<string, unknown>): Promise<st
       const out = list.slice(0, lim).map((p) => ({ serial: p.serial, piano: p.summary, owner: p.owner, location: p.location, section: p.section, phase: p.phase, phasesDone: p.phasesDone, queue: p.queuePos ? `${p.queuePos}/${p.queueTotal}` : "", track: p.track, price: p.price, status: p.status, waitNote: p.waitNote, phaseNotes: s(p.phaseNotes).slice(0, 300), scopeNotes: s(p.scopeNotes).slice(0, 300) }));
       return out.length ? JSON.stringify(out) : "No pianos match.";
     }
+    if (name === "save_top_ten") {
+      const items = Array.isArray(input.items) ? (input.items as Record<string, unknown>[]).slice(0, 10).map((x, i) => ({ rank: Number(x.rank) || i + 1, leadId: s(x.leadId), leadName: s(x.leadName), reason: s(x.reason).slice(0, 400) })) : [];
+      if (!items.length) return "No items given.";
+      const r = await fetch(`${SALES_APP}/api/top-ten?scope=brigham`, { method: "POST", headers: { "x-blp-key": SALES_KEY, "content-type": "application/json" }, body: JSON.stringify({ items, who: "Arnold", scope: "brigham" }), signal: AbortSignal.timeout(20000) });
+      const t = await r.text();
+      return r.ok ? `Top Ten saved in the Sales Console: ${t.slice(0, 200)}` : `Top Ten save failed (${r.status}): ${t.slice(0, 300)}`;
+    }
     if (name === "save_drafts") {
       const r = await fetch(`${SALES_APP}/api/arnold/draft`, { method: "POST", headers: { "x-blp-key": SALES_KEY, "content-type": "application/json" }, body: JSON.stringify({ leadId: s(input.leadId), drafts: input.drafts }), signal: AbortSignal.timeout(20000) });
       const t = await r.text();
@@ -152,28 +160,55 @@ export async function history(slug: string, limit = 40): Promise<ChatMsg[]> {
   return rows.reverse();
 }
 
-async function anthropic(body: Record<string, unknown>): Promise<{ content: { type: string; text?: string; id?: string; name?: string; input?: Record<string, unknown> }[]; stop_reason: string; usage?: Record<string, number> }> {
+async function anthropic(body: Record<string, unknown>, maxTokens = 2500): Promise<{ content: { type: string; text?: string; id?: string; name?: string; input?: Record<string, unknown> }[]; stop_reason: string; usage?: Record<string, number> }> {
   if (!ANTHROPIC_KEY) throw new Error("ANTHROPIC_API_KEY is not set on the console");
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: MODEL, max_tokens: 2500, ...body }),
+    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, ...body }),
     signal: AbortSignal.timeout(110_000),
   });
   if (!r.ok) throw new Error(`Anthropic ${r.status}: ${(await r.text()).slice(0, 300)}`);
   return r.json();
 }
 
+/** Where a turn came from. The agent is told, so it knows who it heard from and where the reply lands. */
+export type Via = "console" | "telegram" | "schedule";
+
+export interface AskOptions {
+  via?: Via;
+  /** One paragraph describing the channel (e.g. "Telegram group 'BLP Sales Team'"). Replaces the console intro's first sentence. */
+  channelNote?: string;
+  /** Extra system instructions (task mode: what to do, how to report). */
+  systemNote?: string;
+  /** Tool-use round trips allowed (chat 8; scheduled tasks far more). */
+  maxTurns?: number;
+  /** Extra tool names (from TOOL_DEFS) beyond the agent's chat set — task mode only. */
+  extraTools?: string[];
+  /** Task runs start from a clean context: don't feed the shared thread back in. */
+  freshContext?: boolean;
+  /** Store the incoming prompt as a user row in agent_messages (false for scheduler prompts). */
+  storePrompt?: boolean;
+  maxTokens?: number;
+  /** Extra fields merged into the stored agent row's meta. */
+  meta?: Record<string, unknown>;
+}
+
 /** One turn: the person's message in, the agent's reply out (stored both ways). */
-export async function askAgent(slug: string, who: string, whoEmail: string, message: string, jobId?: number): Promise<{ reply: string; tools: string[] }> {
+export async function askAgent(slug: string, who: string, whoEmail: string, message: string, jobId?: number, o: AskOptions = {}): Promise<{ reply: string; tools: string[] }> {
   const m = MINDS[slug];
   if (!m) throw new Error(`No in-app mind for ${slug}`);
+  const via: Via = o.via || "console";
   const mind = await loadMind(slug);
-  const past = await history(slug, 30);
-  await supa("agent_messages", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ agent: slug, role: "user", who, who_email: whoEmail, body: message, meta: { via: "console" } }) });
+  const past = o.freshContext ? [] : await history(slug, 30);
+  if (o.storePrompt !== false) await supa("agent_messages", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ agent: slug, role: "user", who, who_email: whoEmail, body: message, meta: { via, ...(o.meta || {}) } }) });
   const now = new Date().toLocaleString("en-US", { timeZone: "America/Denver", weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  // The console intro opens with "You are chatting inside the BLP Agent Console (a web app), not Telegram." — swap that for the real channel.
+  const intro = o.channelNote ? m.intro.replace(/^You are chatting inside the BLP Agent Console \(a web app\), not Telegram\.\s*/, `${o.channelNote.trim()} `) : m.intro;
+  const talking = via === "schedule" ? `No human is typing: this turn was started by ${who} (the cloud scheduler).` : `You are talking with ${who}${whoEmail ? ` (${whoEmail})` : ""}.`;
+  const thread = via === "schedule" ? "" : " The thread you see is shared across the Agent Console and Telegram, so earlier turns may have come from other teammates on other devices.";
   const system = [
-    { type: "text", text: `${m.intro}\n\nToday is ${now} (Mountain time). You are talking with ${who}${whoEmail ? ` (${whoEmail})` : ""}. Keep replies short and useful: recommendation first, details second. Use tools when a question depends on live lead facts or a file you haven't been given — never guess at facts you can look up. If something isn't in the vault or the Sales Console, say so plainly.\n\nYOUR MIND (live from the BLP Knowledge Vault repo):`, cache_control: { type: "ephemeral" } },
+    { type: "text", text: `${intro}\n\nToday is ${now} (Mountain time). ${talking}${thread} Keep replies short and useful: recommendation first, details second. Use tools when a question depends on live lead facts or a file you haven't been given — never guess at facts you can look up. If something isn't in the vault or the Sales Console, say so plainly.${o.systemNote ? `\n\n${o.systemNote.trim()}` : ""}\n\nYOUR MIND (live from the BLP Knowledge Vault repo):`, cache_control: { type: "ephemeral" } },
     { type: "text", text: mind, cache_control: { type: "ephemeral" } },
   ];
   const messages: { role: "user" | "assistant"; content: unknown }[] = [
@@ -184,11 +219,14 @@ export async function askAgent(slug: string, who: string, whoEmail: string, mess
   const merged: typeof messages = [];
   for (const x of messages) { const last = merged[merged.length - 1]; if (last && last.role === x.role && typeof last.content === "string" && typeof x.content === "string") last.content = `${last.content}\n\n${x.content}`; else merged.push({ ...x }); }
   if (merged[0]?.role !== "user") merged.shift();
-  const tools = m.tools.map((t) => TOOL_DEFS[t]).filter(Boolean);
+  const toolNames = Array.from(new Set([...m.tools, ...(o.extraTools || [])]));
+  const tools = toolNames.map((t) => TOOL_DEFS[t]).filter(Boolean);
   const used: string[] = [];
+  const maxTurns = Math.max(1, Math.min(60, o.maxTurns || 8));
   let reply = "";
-  for (let i = 0; i < 8; i++) {
-    const out = await anthropic({ system, messages: merged, tools });
+  for (let i = 0; i < maxTurns; i++) {
+    const last = i === maxTurns - 1;
+    const out = await anthropic({ system, messages: merged, tools, ...(last ? { tool_choice: { type: "none" } } : {}) }, o.maxTokens);
     const text = out.content.filter((c) => c.type === "text").map((c) => c.text || "").join("\n").trim();
     const uses = out.content.filter((c) => c.type === "tool_use");
     if (!uses.length || out.stop_reason !== "tool_use") { reply = text; break; }
@@ -199,32 +237,66 @@ export async function askAgent(slug: string, who: string, whoEmail: string, mess
     if (text) reply = text;
   }
   if (!reply) reply = "I looked but have nothing useful to add — ask me again with a bit more detail.";
-  await supa("agent_messages", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ agent: slug, role: "agent", who: slug.charAt(0).toUpperCase() + slug.slice(1), who_email: "", body: reply, run_id: jobId ? `console-job:${jobId}` : null, meta: { via: "console", model: MODEL, tools: used, to: who } }) });
+  await supa("agent_messages", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ agent: slug, role: "agent", who: slug.charAt(0).toUpperCase() + slug.slice(1), who_email: "", body: reply, run_id: jobId ? `${via}-job:${jobId}` : null, meta: { via, model: MODEL, tools: used, to: who, ...(o.meta || {}) } }) });
   return { reply, tools: used };
 }
 
 // ---------------------------------------------------------------- jobs
-export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: { message?: string }; status: string; result: { reply?: string; tools?: string[] } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
+export interface JobPayload {
+  message?: string;
+  /** Telegram turn: reply here when the job finishes. */
+  telegram?: { chatId: number | string; messageId?: number; chatTitle?: string; chatType?: string };
+  /** Scheduled task (kind "task"): which Arnold task to run. */
+  task?: string;
+  /** Who/what asked for a manual task run. */
+  requestedBy?: string;
+}
+export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; status?: string; telegramMessageIds?: number[]; vaultCommit?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
 
 export const onNetlify = () => Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
 
-export async function createJob(agent: string, who: string, whoEmail: string, message: string): Promise<number> {
-  const r = await supa<Job[]>("agent_jobs", { method: "POST", body: JSON.stringify({ agent, who, who_email: whoEmail, kind: "chat", payload: { message } }) });
+export async function createJob(agent: string, who: string, whoEmail: string, message: string, kind = "chat", payload: Omit<JobPayload, "message"> = {}): Promise<number> {
+  const r = await supa<Job[]>("agent_jobs", { method: "POST", body: JSON.stringify({ agent, who, who_email: whoEmail, kind, payload: { message, ...payload } }) });
   return r[0].id;
 }
 export async function getJob(id: number): Promise<Job | null> {
   const r = await supa<Job[]>(`agent_jobs?id=eq.${id}&limit=1`);
   return r[0] || null;
 }
+/** Set by arnold-tasks.ts so this module needn't import it (avoids a cycle). */
+let taskRunner: ((job: Job) => Promise<NonNullable<Job["result"]>>) | null = null;
+export const registerTaskRunner = (fn: typeof taskRunner) => { taskRunner = fn; };
+
 export async function runJob(id: number): Promise<Job | null> {
   const claimed = await supa<Job[]>(`agent_jobs?id=eq.${id}&status=eq.pending`, { method: "PATCH", body: JSON.stringify({ status: "running", started_at: new Date().toISOString() }) });
   if (!claimed[0]) return getJob(id);
   const job = claimed[0];
   try {
-    const result = await askAgent(job.agent, job.who, job.who_email, String(job.payload?.message || ""), id);
+    let result: NonNullable<Job["result"]>;
+    if (job.kind === "task") {
+      if (!taskRunner) await import("./arnold-tasks"); // registers itself
+      if (!taskRunner) throw new Error("No task runner registered");
+      result = await taskRunner(job);
+    } else if (job.kind === "telegram" && job.payload?.telegram) {
+      const t = job.payload.telegram;
+      const { sendMessage, typing, getMe } = await import("./telegram");
+      await typing(job.agent, t.chatId);
+      const me = await getMe(job.agent).catch(() => null);
+      const where = t.chatType === "private" ? `in a private Telegram chat` : `in the Telegram group "${t.chatTitle || "BLP"}"`;
+      const channelNote = `You are chatting on Telegram as the bot @${me?.username || `${job.agent}larsonbot`}, ${where}. The person who wrote to you is a BLP teammate. Telegram shows plain text with light formatting: no tables, keep bullets short.`;
+      result = await askAgent(job.agent, job.who, job.who_email, String(job.payload?.message || ""), id, { via: "telegram", channelNote, meta: { telegramChat: String(t.chatId) } });
+      try { result.telegramMessageIds = await sendMessage(job.agent, t.chatId, result.reply || "…", { replyTo: t.chatType === "private" ? undefined : t.messageId }); }
+      catch (e) { result.status = `reply not delivered: ${e instanceof Error ? e.message : String(e)}`; }
+    } else {
+      result = await askAgent(job.agent, job.who, job.who_email, String(job.payload?.message || ""), id);
+    }
     await supa(`agent_jobs?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "done", result, finished_at: new Date().toISOString() }) });
   } catch (e) {
-    await supa(`agent_jobs?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "failed", error: (e instanceof Error ? e.message : String(e)).slice(0, 1000), finished_at: new Date().toISOString() }) });
+    const msg = (e instanceof Error ? e.message : String(e)).slice(0, 1000);
+    await supa(`agent_jobs?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "failed", error: msg, finished_at: new Date().toISOString() }) });
+    if (job.kind === "telegram" && job.payload?.telegram) {
+      try { const { sendMessage } = await import("./telegram"); await sendMessage(job.agent, job.payload.telegram.chatId, `Sorry — I hit an error and couldn't answer: ${msg.slice(0, 200)}`); } catch { /* best effort */ }
+    }
   }
   return getJob(id);
 }
@@ -232,4 +304,9 @@ export async function runJob(id: number): Promise<Job | null> {
 export async function kickBackground(id: number): Promise<void> {
   const r = await fetch(`${config.publicBaseUrl.replace(/\/$/, "")}/.netlify/functions/agent-chat-run-background`, { method: "POST", redirect: "manual", headers: { "content-type": "application/json", "x-blp-key": config.accessKey }, body: JSON.stringify({ jobId: id }) });
   if (r.status >= 300) throw new Error(`Background run failed to start (${r.status}${r.status < 400 ? " redirect — middleware is gating the function path" : ""})`);
+}
+/** Queue a job: background on Netlify, inline in local dev. Returns the job (done) or the pending id. */
+export async function dispatchJob(id: number): Promise<Job | null> {
+  if (onNetlify()) { await kickBackground(id); return getJob(id); }
+  return runJob(id);
 }

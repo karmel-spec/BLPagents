@@ -47,3 +47,21 @@ the 40 portraits in `public/agents/`, both `/api/agents/*` routes, and the
 heartbeat reporter script. The Sheets layer (`sheets.ts`) is trimmed to
 named-tab reads/writes; auth is the same shared-passcode model with its own
 cookie (`blpagents_session`).
+
+## Cloud agent runtime (phase 1, Oct 7 2026)
+
+Arnold runs from this site instead of Hermes on the shop Mac. Everything below needs the runner env (`ANTHROPIC_API_KEY`, `VAULT_GITHUB_TOKEN`, `SUPABASE_*`, `BLP_ARNOLD_ACCESS_KEY`) plus `TELEGRAM_BOT_TOKEN_ARNOLD` and `TELEGRAM_CHAT_ID`.
+
+**Telegram.** `POST /api/telegram/<slug>` is the bot's webhook (secret header verified; chat must be the team group or listed in `TELEGRAM_ALLOWED_CHATS_<SLUG>`; in groups the bot answers only when @mentioned, replied to, or sent a /command). Each message is a job in the shared `agent_messages` thread, so the console and Telegram see one history, and the agent is told who wrote (Telegram name + @username). Register once per bot, after stopping that bot's Hermes adapter (a bot can't poll and webhook at once):
+
+```bash
+curl -X POST "https://blpagents.netlify.app/api/telegram/arnold/setup?key=$BLP_APP_ACCESS_KEY"
+```
+`GET` the same URL for webhook status, `DELETE` to hand the bot back to Hermes.
+
+**Schedule.** `netlify/functions/arnold-scheduler.mts` fires at :00/:30 UTC and matches America/Denver wall-clock time (`src/lib/arnold-tasks.ts`), so DST never moves a run: `daily-brief` 7:30 Mon–Fri (Top Ten → Sales Console + Telegram), `briefing` 8:00 Mon–Sat (Telegram), `predraft` 10:00/14:00/17:00 Mon–Sat (drafts for approval, up to 8 leads per pass). Each run appends a line under “Cloud runtime (Netlify)” in the vault's `Agents/arnold/STATUS.md`. Run one now:
+
+```bash
+curl -X POST "https://blpagents.netlify.app/api/agents/arnold/tasks/briefing?key=$BLP_APP_ACCESS_KEY"
+```
+then poll `GET /api/agents/arnold/chat/jobs/<jobId>?key=…`; `GET /api/agents/arnold/tasks?key=…` lists the schedule, Denver time, and recent runs.
