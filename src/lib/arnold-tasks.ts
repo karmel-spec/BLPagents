@@ -198,4 +198,4 @@ async function runTask(job: Job): Promise<NonNullable<Job["result"]>> {
   result.summary = status;
   return result;
 }
-registerTaskRunner(runTask);
+registerTaskRunner(AGENT, runTask);

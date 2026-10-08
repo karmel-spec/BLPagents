@@ -338,9 +338,21 @@ export async function getJob(id: number): Promise<Job | null> {
   const r = await supa<Job[]>(`agent_jobs?id=eq.${id}&limit=1`);
   return r[0] || null;
 }
-/** Set by arnold-tasks.ts so this module needn't import it (avoids a cycle). */
-let taskRunner: ((job: Job) => Promise<NonNullable<Job["result"]>>) | null = null;
-export const registerTaskRunner = (fn: typeof taskRunner) => { taskRunner = fn; };
+/** Per-agent task runners, registered by <slug>-tasks.ts so this module needn't import them (avoids a cycle). */
+type TaskRunner = (job: Job) => Promise<NonNullable<Job["result"]>>;
+const taskRunners: Record<string, TaskRunner> = {};
+export const registerTaskRunner = (agent: string, fn: TaskRunner) => { taskRunners[agent] = fn; };
+/** Agents with a scheduled-task module (src/lib/<slug>-tasks.ts). */
+export const TASK_AGENTS = ["arnold", "clara"] as const;
+export async function loadTaskRunner(agent: string): Promise<TaskRunner> {
+  if (!taskRunners[agent]) {
+    if (agent === "arnold") await import("./arnold-tasks");
+    else if (agent === "clara") await import("./clara-tasks");
+  }
+  const fn = taskRunners[agent];
+  if (!fn) throw new Error(`No task runner for ${agent}`);
+  return fn;
+}
 
 export async function runJob(id: number): Promise<Job | null> {
   const claimed = await supa<Job[]>(`agent_jobs?id=eq.${id}&status=eq.pending`, { method: "PATCH", body: JSON.stringify({ status: "running", started_at: new Date().toISOString() }) });
@@ -349,9 +361,7 @@ export async function runJob(id: number): Promise<Job | null> {
   try {
     let result: NonNullable<Job["result"]>;
     if (job.kind === "task") {
-      if (!taskRunner) await import("./arnold-tasks"); // registers itself
-      if (!taskRunner) throw new Error("No task runner registered");
-      result = await taskRunner(job);
+      result = await (await loadTaskRunner(job.agent))(job);
     } else if (job.kind === "telegram" && job.payload?.telegram) {
       const t = job.payload.telegram;
       const { sendMessage, typing, getMe } = await import("./telegram");
