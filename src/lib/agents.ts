@@ -148,8 +148,13 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
    * cells are non-empty, so pin them here. Slug stays `ed` (avatar, email, heartbeat).
    */
   ed: {
+    status: "live",
     name: "Eddy",
     runtime: "Grok Bot (Eddy Bot)",
+    // telegramActive stays on the registry value (false) until TELEGRAM_BOT_TOKEN_ED
+    // exists and the sheet's "telegram active" cell is Y. agents.ts is also imported
+    // by the browser, so it cannot read that secret. POST /api/telegram/ed/setup
+    // returns 503 until the token is set — that is the gate. Do not hardcode true here.
     schedule: [
       {
         time: "hourly, 8:12 AM–7:12 PM",
@@ -159,6 +164,8 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
       },
     ],
     links: [
+      { name: "Ask Eddy", href: "/agents/ed/chat", note: "In-app chat, answered by Eddy Bot on Grok Bot. Marketing Engine cards open this with the serial and card URL." },
+      { name: "Telegram @edlarsonbot", href: "https://t.me/edlarsonbot", note: "Same bridge, after TELEGRAM_BOT_TOKEN_ED is set and POST /api/telegram/ed/setup is called. Not marked active until that token exists." },
       { name: "YouTube @brighamspianoservice", href: "https://www.youtube.com/@brighamspianoservice", note: "Brigham Larson Pianos" },
       { name: "Video pipeline", href: "https://blpmarketing.netlify.app/video", note: "Marketing Engine cards are /video?q=<serial>" },
     ],

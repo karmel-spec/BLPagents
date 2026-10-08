@@ -12,6 +12,7 @@
  */
 import { getFile, listDir, vaultConfigured } from "./vault-github";
 import { supa, supaConfigured } from "./supa";
+import { matchesThreadQuery } from "./thread-search";
 import { config } from "./config";
 import { backendFor, createFilter, forwardInternal, getMessage, labelAndArchive, mailboxConfigured, searchMail, unsubscribe } from "./mail";
 import { markExecuted, requireApproval } from "./agent-approvals";
@@ -77,7 +78,12 @@ MINDS.ivory = {
   tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead"],
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand and look up customers in the Sales Console. Your scheduled jobs and scripts don't run from this chat — describe what they would do and where they live.",
 };
-export const chatEnabled = (slug: string) => Boolean(MINDS[slug]);
+/**
+ * Agents whose in-app chat is the Grok Bot bridge and who have no Claude mind.
+ * Eddy (slug `ed`) is answered by Eddy Bot only — never MINDS / Claude / Hermes.
+ */
+export const GROKBOT_CHAT_ONLY = new Set(["ed"]);
+export const chatEnabled = (slug: string) => Boolean(MINDS[slug]) || GROKBOT_CHAT_ONLY.has(slug);
 
 // ---------------------------------------------------------------- mind (vault)
 const mindCache = new Map<string, { at: number; text: string }>();
@@ -238,6 +244,19 @@ export async function history(slug: string, limit = 40): Promise<ChatMsg[]> {
   return rows.reverse();
 }
 
+/**
+ * Search one agent's shared thread (text, speaker, Denver date, card context).
+ * Reads the newest 500 rows and filters here so a serial or a person's name
+ * matches even when it lives in `meta.context` rather than the message body.
+ */
+export async function searchThread(slug: string, raw: string, limit = 100): Promise<ChatMsg[]> {
+  const q = raw.trim().slice(0, 120);
+  const cap = Math.min(200, Math.max(1, limit));
+  if (q.length < 2) return [];
+  const rows = await supa<ChatMsg[]>(`agent_messages?agent=eq.${encodeURIComponent(slug)}&select=id,agent,role,who,who_email,body,run_id,created_at,meta&order=created_at.desc&limit=500`);
+  return rows.filter((m) => matchesThreadQuery(m, q)).slice(0, cap).reverse();
+}
+
 async function anthropic(body: Record<string, unknown>, maxTokens = 2500): Promise<{ content: { type: string; text?: string; id?: string; name?: string; input?: Record<string, unknown> }[]; stop_reason: string; usage?: Record<string, number> }> {
   if (!ANTHROPIC_KEY) throw new Error("ANTHROPIC_API_KEY is not set on the console");
   const r = await fetch("https://api.anthropic.com/v1/messages", {
@@ -328,11 +347,13 @@ export interface JobPayload {
   task?: string;
   /** Who/what asked for a manual task run. */
   requestedBy?: string;
-  /** Cristofori GrokBot bridge (kind "grokbot"). The reply arrives via POST /api/chris/reply. */
+  /** Grok Bot bridge (kind "grokbot"). The reply arrives via POST /api/<agent>/reply. */
   channel?: "telegram" | "app";
   app?: string;
   sender?: { name: string; id: string };
   conversation_id?: string;
+  /** Optional opener context (serial, piano, card_url, user, …). */
+  context?: Record<string, string>;
 }
 export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; summary?: string; telegramMessageIds?: number[]; vaultCommit?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
 
