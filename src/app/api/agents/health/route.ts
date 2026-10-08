@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readAgentHealth } from "@/lib/agent-health";
+import { AGENTS, isGrokBotRuntime } from "@/lib/agents";
 import { requireSession, jsonError } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,12 @@ export async function GET(req: NextRequest) {
         health.arnold.issues.push("tunnel unreachable from the internet (Mac asleep or cloudflared down)");
         if (health.arnold.dot === "healthy") health.arnold.dot = "attention";
       }
+    }
+
+    // Grok Bot agents are not Hermes profiles. A missing or stale Mac
+    // heartbeat must not paint them offline once that profile is switched off.
+    for (const agent of AGENTS) {
+      if (isGrokBotRuntime(agent.runtime)) delete health[agent.slug];
     }
 
     return NextResponse.json({ health });

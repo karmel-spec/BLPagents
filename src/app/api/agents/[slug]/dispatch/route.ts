@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { gateway, type DispatchReceipt, type DispatchRecord } from "@/lib/gateway";
 import { requireSession, jsonError } from "@/lib/api";
 import { parseGoogleSession, SESSION_COOKIE } from "@/lib/auth";
-import { getAgent } from "@/lib/agents";
+import { getAgent, isGrokBotRuntime } from "@/lib/agents";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -19,7 +19,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   const guard = requireSession(req);
   if (guard) return guard;
   const { slug } = await ctx.params;
-  if (!SLUG.test(slug) || !getAgent(slug)) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
+  const agent = getAgent(slug);
+  if (!SLUG.test(slug) || !agent) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
+  if (isGrokBotRuntime(agent.runtime)) {
+    const via = agent.telegram ? ` Message ${agent.name} on Telegram: ${agent.telegram}` : "";
+    return NextResponse.json({ error: `${agent.name} runs on Grok Bot.${via}` }, { status: 409 });
+  }
   try {
     const body = (await req.json().catch(() => ({}))) as { input?: string };
     const input = String(body.input || "").trim();
@@ -40,7 +45,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   const guard = requireSession(req);
   if (guard) return guard;
   const { slug } = await ctx.params;
-  if (!SLUG.test(slug)) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
+  const agent = getAgent(slug);
+  if (!SLUG.test(slug) || !agent) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
+  if (isGrokBotRuntime(agent.runtime)) return NextResponse.json({ dispatches: [] });
   try {
     const r = await gateway<{ dispatches: DispatchRecord[] }>(`/agents/${slug}/dispatches?limit=8`);
     return NextResponse.json(r);

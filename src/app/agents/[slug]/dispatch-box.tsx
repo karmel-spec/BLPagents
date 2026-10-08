@@ -2,20 +2,46 @@
 
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/client";
-import type { AgentConfig } from "@/lib/agents";
+import { isGrokBotRuntime, type AgentConfig } from "@/lib/agents";
 import type { DispatchReceipt, DispatchRecord, RunStatus } from "@/lib/gateway";
 import { ago } from "../../fleet-shared";
+import MelodyBridge from "./melody-bridge";
 
 /**
- * Dispatch box — hand a live agent one task from the console. The task goes
- * console → gateway (Karmel's Mac, via tunnel) → the agent's Hermes runtime;
- * we poll for the result and show it here. Boundaries sit beside the box so
- * whoever is typing sees what the agent will never do.
+ * Dispatch box — hand a live Hermes agent one task from the console. The task
+ * goes console → gateway (Karmel's Mac, via tunnel) → that agent's Hermes
+ * runtime; we poll for the result and show it here. Melody's desk is the
+ * Grok Bot bridge (this page and Telegram). Other Grok Bot agents get a
+ * Telegram link instead of a task that would fail once Hermes is off.
  */
+
+function GrokBotReach({ agent }: { agent: AgentConfig }) {
+  const handle = agent.telegram?.replace(/^https?:\/\/t\.me\//, "@");
+  return (
+    <div className="card">
+      <h2>Message {agent.name}</h2>
+      <p style={{ margin: "0 0 12px" }}>
+        {agent.name} runs on Grok Bot. The team reaches {agent.name} on Telegram
+        {handle ? <> ({handle})</> : null}.
+      </p>
+      {agent.telegram && (
+        <a className="btn" href={agent.telegram} target="_blank" rel="noreferrer">
+          Message {agent.name}
+        </a>
+      )}
+    </div>
+  );
+}
 
 type Live = { configured: boolean; machine?: string; agents: Record<string, { up: boolean }> };
 
 export default function DispatchBox({ agent }: { agent: AgentConfig }) {
+  if (agent.slug === "melody") return <MelodyBridge agent={agent} />;
+  if (isGrokBotRuntime(agent.runtime)) return <GrokBotReach agent={agent} />;
+  return <HermesDispatch agent={agent} />;
+}
+
+function HermesDispatch({ agent }: { agent: AgentConfig }) {
   const [live, setLive] = useState<Live | null>(null);
   const [liveError, setLiveError] = useState("");
   const [task, setTask] = useState("");

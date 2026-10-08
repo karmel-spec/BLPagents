@@ -9,7 +9,9 @@
  *
  * Agents are discovered from ~/.hermes/profiles/<slug>/.env (API_SERVER_PORT /
  * API_SERVER_KEY) — no manifest to maintain. An agent is "live" when its
- * /health answers. Every dispatch is appended to ~/.hermes/blp-dispatch-log.jsonl.
+ * /health answers. Profiles whose registry runtime is Grok Bot (and melody,
+ * who moved there) are not routed: Telegram is how the team reaches them.
+ * Every dispatch is appended to ~/.hermes/blp-dispatch-log.jsonl.
  *
  * Auth: every request carries `x-blp-gateway-key` = keychain
  * blp-agent-console / gateway:key (or env BLP_GATEWAY_KEY). Binds loopback only;
@@ -23,8 +25,11 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { grokBotSlugsFromRegistry, readRegistry, registryCandidates } from "./grok-bot.mjs";
 
 const HOME = os.homedir();
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PROFILES = path.join(HOME, ".hermes", "profiles");
 const LOG = path.join(HOME, ".hermes", "blp-dispatch-log.jsonl");
 const PORT = Number(process.env.BLP_GATEWAY_PORT || 8787);
@@ -55,12 +60,18 @@ function readEnv(file) {
   return out;
 }
 
+/** Grok Bot agents are not Hermes runtimes, even if a profile directory is still on disk. */
+function grokBotSlugs() {
+  return grokBotSlugsFromRegistry(readRegistry(registryCandidates(HOME, SCRIPT_DIR)) || []);
+}
+
 /** slug → { port, key } for every profile with an API server configured. */
 function discoverAgents() {
   const agents = {};
+  const skip = grokBotSlugs();
   if (!fs.existsSync(PROFILES)) return agents;
   for (const slug of fs.readdirSync(PROFILES)) {
-    if (EXCLUDE.has(slug)) continue;
+    if (EXCLUDE.has(slug) || skip.has(slug)) continue;
     const envFile = path.join(PROFILES, slug, ".env");
     if (!fs.existsSync(envFile)) continue;
     const env = readEnv(envFile);
@@ -191,5 +202,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, "127.0.0.1", () => {
-  console.log(`${new Date().toISOString()} BLP agent gateway on 127.0.0.1:${PORT} — agents: ${Object.keys(discoverAgents()).sort().join(", ")}`);
+  const skipped = [...grokBotSlugs()].sort().join(", ") || "none";
+  console.log(`${new Date().toISOString()} BLP agent gateway on 127.0.0.1:${PORT} — agents: ${Object.keys(discoverAgents()).sort().join(", ") || "(none)"} — Grok Bot (not routed): ${skipped}`);
 });

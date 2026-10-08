@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jsonError, requireSessionOrKey } from "@/lib/api";
 import { getAgent } from "@/lib/agents";
 import { config } from "@/lib/config";
+import { melodyTelegramAllowlist } from "@/lib/melody-bridge";
 import { allowedChats, botToken, deleteWebhook, getMe, getWebhookInfo, setWebhook, teamChatId } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,14 @@ export const dynamic = "force-dynamic";
  */
 async function state(slug: string) {
   const [me, hook] = await Promise.all([getMe(slug), getWebhookInfo(slug)]);
-  return { bot: { id: me.id, username: me.username, name: me.first_name }, webhook: hook, allowedChats: allowedChats(slug), teamChatId: teamChatId() || null, expectedUrl: `${config.publicBaseUrl.replace(/\/$/, "")}/api/telegram/${slug}` };
+  return {
+    bot: { id: me.id, username: me.username, name: me.first_name },
+    webhook: hook,
+    allowedChats: allowedChats(slug),
+    ...(slug === "melody" ? { melodyTelegramAllowlist: melodyTelegramAllowlist() } : {}),
+    teamChatId: teamChatId() || null,
+    expectedUrl: `${config.publicBaseUrl.replace(/\/$/, "")}/api/telegram/${slug}`,
+  };
 }
 async function guard(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const g = requireSessionOrKey(req);

@@ -5,12 +5,26 @@ import Link from "next/link";
 import { getAgent } from "@/lib/agents";
 import { Avatar } from "../../../fleet-shared";
 import ChatPanel from "../chat-panel";
+import MelodyBridge from "../melody-bridge";
 
 /** Popup-sized chat window (opened by the assistant dock in the other BLP apps). */
 export default function AgentChatPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const agent = getAgent(slug);
   if (!agent) return <div className="banner bad">No agent named “{slug}”. <Link href="/">Back</Link></div>;
+  if (agent.slug === "melody") {
+    return (
+      <div className="chat-popup">
+        <div className="page-head" style={{ alignItems: "center", gap: 12, marginBottom: 8 }}>
+          <Avatar agent={agent} size={40} live />
+          <div><h1 style={{ margin: 0, fontSize: 18 }}>{agent.name}</h1><div className="muted" style={{ fontSize: 12 }}>{agent.role} · Grok Bot</div></div>
+          <span style={{ flex: 1 }} />
+          <Link href={`/agents/${agent.slug}`} className="crumb">Full page →</Link>
+        </div>
+        <MelodyBridge agent={agent} compact />
+      </div>
+    );
+  }
   return (
     <div className="chat-popup">
       <div className="page-head" style={{ alignItems: "center", gap: 12, marginBottom: 8 }}>

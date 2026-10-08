@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/client";
-import { AGENTS, type AgentConfig } from "@/lib/agents";
+import { AGENTS, isGrokBotRuntime, type AgentConfig } from "@/lib/agents";
 import { Avatar, DOT_LABEL, DOT_RANK, ago, dotClass, type HealthDot, type HealthMap } from "./fleet-shared";
 
 /** Mission Control — the fleet board. */
@@ -46,7 +46,7 @@ function Board() {
     };
   }, []);
 
-  const dotFor = (a: AgentConfig): HealthDot => health?.[a.slug]?.dot ?? "none";
+  const dotFor = (a: AgentConfig): HealthDot => (isGrokBotRuntime(a.runtime) ? "none" : health?.[a.slug]?.dot ?? "none");
 
   const agents = useMemo(() => {
     const list = dept ? AGENTS.filter((a) => a.department === dept) : [...AGENTS];
@@ -55,9 +55,15 @@ function Board() {
   }, [dept, health]);
 
   const counts = { healthy: 0, attention: 0, offline: 0, none: 0 };
-  for (const a of AGENTS) counts[dotFor(a)]++;
+  let grokBot = 0;
+  for (const a of AGENTS) {
+    if (isGrokBotRuntime(a.runtime)) grokBot++;
+    else counts[dotFor(a)]++;
+  }
   const machines = new Set(
-    Object.values(health || {}).flatMap((h) => h.machine.split(" + ").filter(Boolean))
+    Object.values(health || {})
+      .filter((h) => !isGrokBotRuntime(AGENTS.find((a) => a.slug === h.slug)?.runtime))
+      .flatMap((h) => h.machine.split(" + ").filter(Boolean))
   );
 
   const events: Event[] = useMemo(() => {
@@ -65,6 +71,7 @@ function Board() {
     const out: Event[] = [];
     for (const h of Object.values(health)) {
       const agent = AGENTS.find((a) => a.slug === h.slug);
+      if (agent && isGrokBotRuntime(agent.runtime)) continue;
       const name = agent?.name || h.slug;
       for (const issue of h.issues) out.push({ at: h.reportedAt, text: `${name}: ${issue}` });
       if (h.fresh && h.issues.length === 0) {
@@ -93,6 +100,7 @@ function Board() {
         <span className="chip"><span className="dot w" />{health ? counts.attention : "…"} need attention</span>
         <span className="chip"><span className="dot o" />{health ? counts.offline : "…"} offline</span>
         <span className="chip"><span className="dot n" />{health ? counts.none : "…"} on deck</span>
+        {grokBot > 0 && <span className="chip"><span className="dot n" />{grokBot} Grok Bot</span>}
         {machines.size > 0 && <span className="chip">{machines.size} machine{machines.size === 1 ? "" : "s"} reporting</span>}
       </div>
 
@@ -112,7 +120,8 @@ function Board() {
             </thead>
             <tbody>
               {agents.map((a) => {
-                const h = health?.[a.slug];
+                const grok = isGrokBotRuntime(a.runtime);
+                const h = grok ? undefined : health?.[a.slug];
                 const d = dotFor(a);
                 return (
                   <tr
@@ -120,10 +129,10 @@ function Board() {
                     className={`rowlink${d === "attention" ? " warn" : d === "offline" ? " off" : ""}`}
                     onClick={() => router.push(`/agents/${a.slug}`)}
                   >
-                    <td><span className={`dot ${dotClass(d)}`} title={DOT_LABEL[d]} /></td>
+                    <td><span className={`dot ${dotClass(d)}`} title={grok ? "Grok Bot" : DOT_LABEL[d]} /></td>
                     <td>
                       <span className="ag">
-                        <Avatar agent={a} size={28} live={d !== "none"} />
+                        <Avatar agent={a} size={28} live={grok || d !== "none"} />
                         <span>
                           {a.name}
                           <span className="r">{a.role}</span>
@@ -137,9 +146,9 @@ function Board() {
                         </ul>
                       )}
                     </td>
-                    <td className="mono">{h?.machine || "—"}</td>
+                    <td className="mono">{grok ? "Grok Bot" : h?.machine || "—"}</td>
                     <td className="mono">{h && h.cronsActive > 0 ? `${h.cronsOk}/${h.cronsActive}` : "—"}</td>
-                    <td className="mono">{h ? ago(h.reportedAt) : a.registryStatus === "Active" ? "active" : "on deck"}</td>
+                    <td className="mono">{grok ? "Telegram" : h ? ago(h.reportedAt) : a.registryStatus === "Active" ? "active" : "on deck"}</td>
                   </tr>
                 );
               })}
