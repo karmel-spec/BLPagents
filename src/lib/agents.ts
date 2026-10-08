@@ -21,6 +21,11 @@ export interface AgentLink {
 }
 
 /** Per-agent info harvested from the BLP Knowledge Vault (scripts/harvest-vault.mjs). */
+export interface VaultPlaybook {
+  title: string;
+  items: string[];
+}
+
 export interface VaultInfo {
   mission?: string | null;
   vibe?: string;
@@ -30,6 +35,8 @@ export interface VaultInfo {
   currentProjects?: string[];
   openQuestions?: string[];
   requestedCrons?: string[];
+  /** Operating spec shown on the agent page. Eddy Bot's playbook lives here. */
+  playbook?: VaultPlaybook[];
   vaultFolder?: string;
   docs?: [string, string][];
 }
@@ -109,6 +116,27 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
       ["Knowledge base", "~/Documents/BLP Knowledge Vault/agents/arnold/kb/ (Brigham voice corpus, sales strategy rules)"],
       ["Sales Console contract", "~/Documents/BLP Knowledge Vault/agents/arnold/sales-console-api.md"],
       ["Drafting skill", "~/.hermes/profiles/arnold/skills/business-operations/blp-arnold-sales/"],
+    ],
+  },
+  /**
+   * Eddy Bot (Karmel, 2026-10-08): Grok Bot replaced the Hermes Eddy profile.
+   * `npm run sync-registry` rewrites name and runtime from the sheet when those
+   * cells are non-empty, so pin them here. Slug stays `ed` (avatar, email, heartbeat).
+   */
+  ed: {
+    name: "Eddy",
+    runtime: "Grok Bot (Eddy Bot)",
+    schedule: [
+      {
+        time: "hourly, 8:12 AM–7:12 PM",
+        days: "Mon–Sat",
+        what: "Auto-Shorts from new BLP videos — one Short per new file, delivered for review",
+        where: "SMS heads-up to Karmel via BLP Twilio once configured",
+      },
+    ],
+    links: [
+      { name: "YouTube @brighamspianoservice", href: "https://www.youtube.com/@brighamspianoservice", note: "Brigham Larson Pianos" },
+      { name: "Video pipeline", href: "https://blpmarketing.netlify.app/video", note: "Marketing Engine cards are /video?q=<serial>" },
     ],
   },
 };

@@ -30,7 +30,10 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
       .then((r) => setRecent(r.dispatches))
       .catch(() => {});
 
+  const onGrokBot = /grok bot/i.test(agent.runtime || "");
+
   useEffect(() => {
+    if (onGrokBot) return;
     api<Live>("/api/agents/live")
       .then((l) => {
         setLive(l);
@@ -41,7 +44,10 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
       if (poll.current) clearInterval(poll.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agent.slug]);
+  }, [agent.slug, onGrokBot]);
+
+  // Eddy Bot answers on Grok Bot. Do not hand his tasks to a Hermes profile.
+  if (onGrokBot) return null;
 
   if (liveError) return <div className="banner bad">⚠ Agent gateway: {liveError}</div>;
   if (!live) return null;
