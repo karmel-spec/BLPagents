@@ -13,6 +13,8 @@ export const dynamic = "force-dynamic";
  *   DELETE /api/telegram/arnold/setup?key=…             → deleteWebhook (hand the bot back to Hermes polling)
  * A bot can have one webhook OR long-polling (Hermes), never both — register
  * the webhook only when Hermes' Arnold Telegram adapter is stopped.
+ * Chris is the exception: POST /api/telegram/chris/setup refuses. @chrislarsonbot
+ * is registered by hand against the Netlify function (CUTOVER.md).
  */
 async function state(slug: string) {
   const [me, hook] = await Promise.all([getMe(slug), getWebhookInfo(slug)]);
@@ -31,6 +33,19 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   try { return NextResponse.json(await state(g.slug!)); } catch (e) { return jsonError(e, 502); }
 }
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
+  const session = requireSessionOrKey(req);
+  if (session) return session;
+  const { slug } = await ctx.params;
+  // setWebhook is what disconnects Hermes. Chris's cutover is a manual curl to the
+  // Netlify function — see CUTOVER.md. This route must not perform it, even when
+  // the bot token is already on the deployment.
+  if (slug === "chris") {
+    const base = config.publicBaseUrl.replace(/\/$/, "");
+    return NextResponse.json({
+      error: "Don't register @chrislarsonbot from this route. Its webhook is the Netlify function, and setWebhook is the manual step that disconnects the Hermes poller. See CUTOVER.md.",
+      webhookUrl: `${base}/.netlify/functions/chris-telegram`,
+    }, { status: 400 });
+  }
   const g = await guard(req, ctx); if (g.err) return g.err;
   try {
     if (!config.publicBaseUrl.startsWith("https://")) return NextResponse.json({ error: `PUBLIC_BASE_URL must be https for a Telegram webhook (is ${config.publicBaseUrl})` }, { status: 400 });

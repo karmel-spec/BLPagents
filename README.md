@@ -65,3 +65,16 @@ curl -X POST "https://blpagents.netlify.app/api/telegram/arnold/setup?key=$BLP_A
 curl -X POST "https://blpagents.netlify.app/api/agents/arnold/tasks/briefing?key=$BLP_APP_ACCESS_KEY"
 ```
 then poll `GET /api/agents/arnold/chat/jobs/<jobId>?key=…`; `GET /api/agents/arnold/tasks?key=…` lists the schedule, Denver time, and recent runs.
+
+## Cristofori GrokBot (Chris)
+
+Chris (slug `chris` — routes, the faces widget, and `/agents/chris.jpg` all use it) is **Cristofori GrokBot**, a Grok Bot assistant hosted outside this repo. The console is the bridge.
+
+- **App chat** (Agent Console, and the "Message Chris" button in Store Map and the Sales App) POSTs each message to `CHRIS_GROKBOT_WEBHOOK_URL`. The thread shows "Chris is working on it" and renders the reply when it arrives.
+- **Telegram** `@chrislarsonbot` posts to `/.netlify/functions/chris-telegram`. Same bridge. Allowed Telegram user ids are `TELEGRAM_ALLOWED_CHATS_CHRIS` (Brigham and Karmel).
+- **Replies** come back to `POST /api/chris/reply` with header `x-chris-bridge-secret`. Telegram replies are `sendMessage` on the Chris bot; app replies are written to the shared Supabase thread.
+- Until `CHRIS_GROKBOT_WEBHOOK_URL` and `CHRIS_GROKBOT_WEBHOOK_KEY` are both set, Chris stays on the in-app Claude mind. Nothing switches early.
+
+`POST /api/telegram/chris/setup` will not call `setWebhook`. That call is what disconnects Hermes, and it is a manual step. Env vars, the exact `setWebhook` curl, the Hermes shutdown, and the registry sheet edits are in [CUTOVER.md](CUTOVER.md).
+
+The registry JSON is generated. Change the Chris row in the sheet, then `npm run sync-registry`. The console override in `src/lib/agents.ts` already shows the Cristofori GrokBot name, runtime, and boundaries.

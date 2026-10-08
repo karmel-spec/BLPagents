@@ -1,6 +1,6 @@
 /**
  * BLP Assistant quick-links — the agents' faces in the corner of every BLP app.
- * Default set: Clara (admin), Arnold (sales), Cris/Chris (shop). Override with
+ * Default set: Clara (admin), Arnold (sales), Chris (Cristofori, shop). Override with
  * data-agents="clara,arnold,chris" (bottom → top) and data-labels="clara:Ask Clara — …|arnold:…".
  *
  * Embed with:
@@ -45,7 +45,7 @@
   })();
   var AGENTS = (ds.agents || ds.agent || "clara,arnold,chris").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
   var LABELS = {
-    clara: "Message Clara — admin, scheduling, your inbox", arnold: "Message Arnold — sales & leads", chris: "Message Cris — the shop",
+    clara: "Message Clara — admin, scheduling, your inbox", arnold: "Message Arnold — sales & leads", chris: "Message Chris — the shop",
     ivory: "Message Ivory — tuning revenue & reactivation", melody: "Message Melody — admin & customer service",
     marcus: "Message Marcus — marketing", lindsay: "Message Lindsay — operations, Karmel's assistant"
   };
@@ -141,11 +141,13 @@
     tip.className = "blpa-tip";
     tip.textContent = label;
     btn.addEventListener("click", function (ev) {
-      // Agents with an in-app chat (vault-backed, no Hermes) open their chat popup; the rest go to Telegram.
+      // Agents with an in-app chat open their chat popup; the rest go to Telegram.
+      // Chris (slug stays chris) opens this same chat. The console bridges it to Cristofori GrokBot.
       // Shift-click (or data-mode="console") opens the console page instead.
       var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true, lindsay: true };
       if (CHAT[slug] && !ev.shiftKey) {
-        var curl = ORIGIN + "/agents/" + slug + "/chat";
+        var appName = (ds.app || "BLP app") + (location.pathname && location.pathname !== "/" ? " " + location.pathname : "");
+        var curl = ORIGIN + "/agents/" + slug + "/chat?app=" + encodeURIComponent(appName.slice(0, 120));
         var cw = 460, ch = Math.min(820, Math.max(600, (window.screen && window.screen.availHeight || 800) - 80));
         var cleft = Math.max(0, ((window.screen && window.screen.availWidth) || 1280) - cw - 40);
         var cwin = window.open(curl, "blp-chat-" + slug, "popup=yes,width=" + cw + ",height=" + ch + ",left=" + cleft + ",top=40");

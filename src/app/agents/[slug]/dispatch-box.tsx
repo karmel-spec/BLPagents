@@ -33,7 +33,9 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
   const onGrokBot = /grok bot/i.test(agent.runtime || "");
 
   useEffect(() => {
-    if (onGrokBot) return;
+    // Eddy Bot matches /grok bot/i. Cristofori's runtime is "Cristofori GrokBot (cloud)",
+    // which does not, so also skip slug chris. Neither is a Hermes profile.
+    if (onGrokBot || agent.slug === "chris") return;
     api<Live>("/api/agents/live")
       .then((l) => {
         setLive(l);
@@ -46,9 +48,9 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent.slug, onGrokBot]);
 
-  // Eddy Bot answers on Grok Bot. Do not hand his tasks to a Hermes profile.
-  if (onGrokBot) return null;
-
+  // Eddy Bot answers on Grok Bot. Chris answers through the chat bridge.
+  // Do not hand either to a Hermes profile.
+  if (onGrokBot || agent.slug === "chris") return null;
   if (liveError) return <div className="banner bad">⚠ Agent gateway: {liveError}</div>;
   if (!live) return null;
   if (!live.configured) return null; // gateway not set up on this deployment — nothing to show

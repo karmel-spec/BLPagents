@@ -56,11 +56,14 @@ MINDS.lindsay = {
   tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", "quickbooks_lookup"],
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, usually Karmel. You can read any vault file on demand, look up customers in the Sales Console, and look customers up in QuickBooks (read-only: invoices, balances, payments). QuickBooks figures are admin-side only — never pass prices or balances to the shop.",
 };
+// Fallback mind. When CHRIS_GROKBOT_WEBHOOK_URL and CHRIS_GROKBOT_WEBHOOK_KEY are set,
+// Chris's chats are forwarded to Cristofori GrokBot and this mind is not called.
+// Never add KB/shop-economics-CONFIDENTIAL.md here.
 MINDS.chris = {
-  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/chris/SOUL.md", "Agents/chris/SHOP_SOURCES.md", "Agents/chris/KB/INDEX.md", "Agents/chris/KB/domain-notes-and-roster.md", "Agents/chris/KB/phase-time-standards.md", "Agents/chris/KB/training-and-timeclock.md", "Agents/chris/KB/store-map-readme.md"],
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/chris/SOUL.md", "Agents/chris/SHOP_SOURCES.md", "Agents/chris/KB/INDEX.md", "Agents/chris/KB/history-shop-app.md", "Agents/chris/training-briefs/chris-telegram-training-brief.md", "Agents/chris/KB/domain-notes-and-roster.md", "Agents/chris/KB/phase-time-standards.md", "Agents/chris/KB/training-and-timeclock.md", "Agents/chris/KB/store-map-readme.md"],
   folders: ["Agents/chris", "Agents/chris/KB", "kb"],
   tools: ["read_vault_file", "list_vault_folder", "search_shop_pianos"],
-  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, often a shop manager. You can read any vault file on demand and look pianos up on the live Store Map (phase, location, queue, notes). You can't move pianos or change phases from here — say what to do in the Store Map instead.",
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. You are Chris (Cristofori Larson), shop manager for Brigham Larson Pianos — this in-app mind answers only when the Cristofori GrokBot bridge is not configured. The person typing is a BLP teammate, often Brigham or the shop team. You can read any vault file on demand and look pianos up on the live Store Map (phase, location, queue, notes). You draft only: you never move a piano's stage, spot, or status, never message customers, vendors, or the team, and never handle pay, hours, hiring, or delivery dates. Say \"could not verify\" rather than guessing. Keep a serial number in every line that names a piano.",
 };
 MINDS.marcus = {
   core: ["AGENTS.md", "AGENT_STYLE.md", "Agents/marcus/SOUL.md", "Agents/marcus/AGENTS.md", "Agents/marcus/IDENTITY.md", "Agents/marcus/MEMORY.md", "Agents/marcus/STATUS.md", "Agents/marcus/LESSONS.md", "Agents/marcus/kb/KB001-brand-voice.md", "Agents/marcus/kb/KB002-youtube-strategy.md", "Agents/marcus/kb/KB003-social-platforms.md", "Agents/marcus/kb/KB004-content-templates.md", "Agents/marcus/kb/KB005-marketing-metrics.md", "Agents/marcus/kb/KB006-lead-sources.md", "Agents/marcus/kb/KB007-marketing-engine-app.md"],
@@ -325,6 +328,11 @@ export interface JobPayload {
   task?: string;
   /** Who/what asked for a manual task run. */
   requestedBy?: string;
+  /** Cristofori GrokBot bridge (kind "grokbot"). The reply arrives via POST /api/chris/reply. */
+  channel?: "telegram" | "app";
+  app?: string;
+  sender?: { name: string; id: string };
+  conversation_id?: string;
 }
 export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; summary?: string; telegramMessageIds?: number[]; vaultCommit?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
 
@@ -358,6 +366,12 @@ export async function runJob(id: number): Promise<Job | null> {
   const claimed = await supa<Job[]>(`agent_jobs?id=eq.${id}&status=eq.pending`, { method: "PATCH", body: JSON.stringify({ status: "running", started_at: new Date().toISOString() }) });
   if (!claimed[0]) return getJob(id);
   const job = claimed[0];
+  // GrokBot replies land on their own. If something claims the job, put it back
+  // so a later reply can still mark it done. Don't run the Claude mind.
+  if (job.kind === "grokbot") {
+    await supa(`agent_jobs?id=eq.${id}&status=eq.running`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "pending", started_at: null }) });
+    return getJob(id);
+  }
   try {
     let result: NonNullable<Job["result"]>;
     if (job.kind === "task") {

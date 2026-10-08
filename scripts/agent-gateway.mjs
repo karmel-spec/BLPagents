@@ -28,8 +28,10 @@ const HOME = os.homedir();
 const PROFILES = path.join(HOME, ".hermes", "profiles");
 const LOG = path.join(HOME, ".hermes", "blp-dispatch-log.jsonl");
 const PORT = Number(process.env.BLP_GATEWAY_PORT || 8787);
-/** Private/family agents never appear in the business console. */
-const EXCLUDE = new Set(["diana"]);
+/** Private/family agents never appear in the business console.
+ *  chris: Hermes profile is retired. Health comes from the cloud bridge
+ *  (netlify/functions/chris-heartbeat.mts), not port 8660. */
+const EXCLUDE = new Set(["diana", "chris"]);
 const HEALTH_TTL_MS = 30_000;
 
 function gatewayKey() {

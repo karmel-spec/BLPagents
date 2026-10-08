@@ -20,6 +20,7 @@ export const teamChatId = (): string => process.env.TELEGRAM_CHAT_ID || "";
 
 /** Secret Telegram echoes back in X-Telegram-Bot-Api-Secret-Token (letters, digits, _ and - only). */
 export function webhookSecret(slug: string): string {
+  if (slug.toLowerCase() === "chris" && process.env.TELEGRAM_WEBHOOK_SECRET_CHRIS) return process.env.TELEGRAM_WEBHOOK_SECRET_CHRIS;
   if (process.env.TELEGRAM_WEBHOOK_SECRET) return process.env.TELEGRAM_WEBHOOK_SECRET;
   return crypto.createHmac("sha256", "blp-telegram-webhook").update(botToken(slug)).digest("hex").slice(0, 48);
 }
