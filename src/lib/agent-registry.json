@@ -400,7 +400,7 @@
     "accent": "#33526e",
     "avatar": "/agents/melody.jpg",
     "email": "melody@brighamlarsonpianos.com",
-    "runtime": "Hermes",
+    "runtime": "Grok Bot",
     "registryStatus": "Active",
     "crons": "Melody: Monday inbox mini-proposals (8:30 AM Mon → Google Doc emailed to Karmel cc Brigham)",
     "homeComputer": null,

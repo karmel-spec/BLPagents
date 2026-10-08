@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/client";
-import { getAgent } from "@/lib/agents";
+import { getAgent, isGrokBotRuntime } from "@/lib/agents";
 import { Avatar, DOT_LABEL, ago, dotClass, type HealthMap } from "../../fleet-shared";
 import DispatchBox from "./dispatch-box";
 import MindPanel from "./mind-panel";
@@ -38,14 +38,15 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
     );
   }
 
-  const h = health?.[agent.slug];
+  const grok = isGrokBotRuntime(agent.runtime);
+  const h = grok ? undefined : health?.[agent.slug];
   const d = h?.dot ?? "none";
 
   return (
     <>
       <div className="page-head" style={{ alignItems: "center", gap: 16 }}>
         <Link href="/" className="crumb">← Agents</Link>
-        <Avatar agent={agent} size={56} live={d !== "none" || agent.status === "live"} />
+        <Avatar agent={agent} size={56} live={grok || d !== "none" || agent.status === "live"} />
         <div>
           <h1 style={{ marginBottom: 2 }}>{agent.name}</h1>
           <div className="muted" style={{ fontSize: 13 }}>
@@ -61,11 +62,12 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
       </div>
 
       <div className="strip" style={{ marginTop: 14 }}>
-        <span className="chip"><span className={`dot ${dotClass(d)}`} />{DOT_LABEL[d]}</span>
-        {h && <span className="chip">machine: {h.machine || "—"}</span>}
-        {h && h.cronsActive > 0 && <span className="chip">{h.cronsOk}/{h.cronsActive} crons ok</span>}
-        {h && <span className="chip">heartbeat {ago(h.reportedAt)} ago</span>}
-        {!h && <span className="chip">{agent.registryStatus || "On Deck"} — no heartbeats yet</span>}
+        <span className="chip"><span className={`dot ${dotClass(d)}`} />{grok ? "Grok Bot" : DOT_LABEL[d]}</span>
+        {grok && <span className="chip">{agent.slug === "melody" ? "Telegram and this page" : "Reached on Telegram"}</span>}
+        {!grok && h && <span className="chip">machine: {h.machine || "—"}</span>}
+        {!grok && h && h.cronsActive > 0 && <span className="chip">{h.cronsOk}/{h.cronsActive} crons ok</span>}
+        {!grok && h && <span className="chip">heartbeat {ago(h.reportedAt)} ago</span>}
+        {!grok && !h && <span className="chip">{agent.registryStatus || "On Deck"} — no heartbeats yet</span>}
       </div>
 
       {h && h.issues.length > 0 && (
@@ -80,11 +82,11 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
 
       <div className="banner info">{agent.tagline}</div>
 
-      <ChatPanel agent={agent} />
+      {agent.slug !== "melody" && !grok && <ChatPanel agent={agent} />}
 
       <DispatchBox agent={agent} />
 
-      {agent.status === "coming-soon" && !h && (
+      {!grok && agent.status === "coming-soon" && !h && (
         <div className="banner warn">
           🚧 {agent.name} isn&apos;t wired up yet
           {agent.vault

@@ -1,5 +1,6 @@
 import { readTab } from "./sheets";
 import { STATUS_TAB, type HeartbeatCron } from "./agent-health";
+import { getAgent, isGrokBotRuntime } from "./agents";
 
 /**
  * Activity stream — derived from the same "Agent Status" tab as fleet
@@ -24,6 +25,8 @@ export async function readAgentActivity(limit = 120): Promise<ActivityEvent[]> {
   for (const r of rows.slice(1)) {
     const [slug, machine, reportedAt, , cronsJson] = r;
     if (!slug) continue;
+    // Leftover Hermes cron rows are not this agent's current health.
+    if (isGrokBotRuntime(getAgent(slug)?.runtime)) continue;
     let crons: HeartbeatCron[] = [];
     try {
       crons = JSON.parse(cronsJson || "[]");

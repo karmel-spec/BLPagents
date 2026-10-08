@@ -16,8 +16,11 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { execSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { grokBotSlugsFromRegistry, registryCandidates } from "./grok-bot.mjs";
 
 const HOME = os.homedir();
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const APP_URL = process.env.BLP_APP_URL || "https://blpsalesapp.netlify.app";
 const HERMES = path.join(HOME, ".hermes");
 
@@ -173,18 +176,19 @@ if (fs.existsSync(clawAgentsDir) && openclawGatewayRunning()) {
   }
 }
 
-const registryPath = [
-  path.join(HOME, "salesapp2", "src", "lib", "agent-registry.json"),
-  path.join(HOME, "blp", "agent-registry.json"),
-].find((p) => fs.existsSync(p));
+const registryPath = registryCandidates(HOME, SCRIPT_DIR).find((p) => fs.existsSync(p));
+if (!registryPath) throw new Error("No agent-registry.json (salesapp2, ~/blp, or this repo)");
 const registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
 const knownSlugs = new Set(registry.map((a) => a.slug));
+/** Missing Hermes profiles must not be reported as these agents being down. */
+const grokBot = grokBotSlugsFromRegistry(registry);
 all.push(...loadLaunchdServices(knownSlugs));
 
 const bySlug = new Map();
 for (const { profile, cron } of all) {
   const slug = PROFILE_TO_SLUG[profile] || profile;
   if (!knownSlugs.has(slug)) continue; // e.g. "main" store rows already carry their real profile
+  if (grokBot.has(slug)) continue; // Grok Bot — Telegram, not a Hermes heartbeat
   if (!bySlug.has(slug)) bySlug.set(slug, []);
   bySlug.get(slug).push(cron);
 }
@@ -214,5 +218,6 @@ const res = await fetch(`${APP_URL}/api/agents/heartbeat`, {
   body: JSON.stringify(payload),
 });
 const body = await res.text();
-console.log(`${new Date().toISOString()} ${res.status} ${body.slice(0, 200)} (${agents.length} agents: ${[...bySlug.keys()].sort().join(", ")})`);
+const skippedGrok = [...grokBot].filter((slug) => knownSlugs.has(slug)).sort();
+console.log(`${new Date().toISOString()} ${res.status} ${body.slice(0, 200)} (${agents.length} agents: ${[...bySlug.keys()].sort().join(", ")}; Grok Bot not reported: ${skippedGrok.join(", ") || "none"})`);
 if (!res.ok) process.exit(1);

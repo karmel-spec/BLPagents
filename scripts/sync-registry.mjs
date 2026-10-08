@@ -2,8 +2,10 @@
 /**
  * Regenerate src/lib/agent-registry.json from Karmel's agent-registry sheet
  * ("Agents" tab). The sheet is the source of truth for identity fields
- * (name, department, role, status, runtime, email, telegram, supervisor);
- * console-owned presentation fields (accent color, avatar, tagline) are
+ * (name, department, role, status, runtime, email, telegram, supervisor).
+ * runtime_system is free text — "Grok Bot" is stored as written. See
+ * RUNTIME_MIGRATIONS for a move the console keeps until the sheet cell matches.
+ * Console-owned presentation fields (accent color, avatar, tagline) are
  * preserved from the existing JSON — new agents get a department accent and
  * a portrait path if one exists in public/agents/.
  *
@@ -95,6 +97,26 @@ const deptAccent = new Map(existing.map((a) => [a.department, a.accent]));
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 /** Sheet cells wrap with hard newlines — collapse all whitespace runs. */
 const clean = (v) => (v || "").replace(/\s+/g, " ").trim();
+
+/**
+ * Runtime moves already made in the console. `runtime_system` is free text
+ * and is copied as written — "Grok Bot" needs no translation. While the sheet
+ * cell is still blank or still the old value, keep `to` so a sync cannot put
+ * the agent back on Hermes. Any other sheet value (including "Grok Bot") wins.
+ */
+const RUNTIME_MIGRATIONS = {
+  melody: { from: "Hermes", to: "Grok Bot" },
+};
+
+function runtimeValue(slug, sheetRuntime, prevRuntime) {
+  const sheet = clean(sheetRuntime);
+  const migration = RUNTIME_MIGRATIONS[slug];
+  if (migration && (sheet === "" || sheet === migration.from)) {
+    console.warn(`  ${slug}: runtime_system is "${sheet || "(blank)"}"; writing "${migration.to}" until that sheet cell is updated.`);
+    return migration.to;
+  }
+  return sheet || prevRuntime || null;
+}
 const out = [];
 const seen = new Set();
 
@@ -123,7 +145,7 @@ for (const r of rows.slice(3)) {
     accent: prev.accent || deptAccent.get(dept) || "#5b574f",
     avatar: prev.avatar || (hasAvatar ? `/${avatarFile}` : null),
     email: clean(r[C.email]) || prev.email || null,
-    runtime: clean(r[C.runtime]) || prev.runtime || null,
+    runtime: runtimeValue(slug, r[C.runtime], prev.runtime),
     registryStatus: clean(r[C.status]) || prev.registryStatus || "On Deck",
     crons: clean(r[C.crons]) || prev.crons || null,
     homeComputer: clean(r[C.homeComputer]) || prev.homeComputer || null,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAgent } from "@/lib/agents";
 import { brainConfigured, chatEnabled, createJob, dispatchJob } from "@/lib/agent-brain";
+import { handleMelodyTelegramUpdate } from "@/lib/melody-bridge";
 import { botToken, chatAllowed, displayName, getMe, sendMessage, webhookSecret, type TgUpdate } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
@@ -9,8 +10,9 @@ export const maxDuration = 26;
 /**
  * Telegram webhook for one agent's bot: POST /api/telegram/arnold
  * Telegram must send X-Telegram-Bot-Api-Secret-Token = webhookSecret(slug)
- * (set by /api/telegram/arnold/setup). The message becomes a job in the same
- * agent_messages thread the console uses; the background runner replies.
+ * (set by /api/telegram/arnold/setup). Cloud-brain agents become a job in
+ * agent_messages. Melody is the Grok Bot bridge: allowlisted users are stored
+ * and forwarded to her webhook; she replies via POST /api/melody/reply.
  */
 const SLUG = /^[a-z0-9-]{1,40}$/;
 const seen = new Map<string, number>(); // update_id dedupe within one warm instance
@@ -20,6 +22,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   if (!SLUG.test(slug) || !getAgent(slug) || !botToken(slug)) return NextResponse.json({ error: "No Telegram bot for this agent" }, { status: 404 });
   if (req.headers.get("x-telegram-bot-api-secret-token") !== webhookSecret(slug)) return NextResponse.json({ error: "bad secret" }, { status: 403 });
   const u = (await req.json().catch(() => null)) as TgUpdate | null;
+  if (slug === "melody") {
+    try {
+      return await handleMelodyTelegramUpdate(u);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return NextResponse.json({ ok: false, error: message.slice(0, 300) }, { status: 502 });
+    }
+  }
   const msg = u?.message;
   // Always 200 from here on: a non-2xx makes Telegram retry the same update.
   if (!u || !msg || !msg.from || msg.from.is_bot) return NextResponse.json({ ok: true, skipped: "no message" });

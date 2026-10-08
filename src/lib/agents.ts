@@ -188,6 +188,15 @@ export function getAgent(slug: string): AgentConfig | undefined {
   return AGENTS.find((a) => a.slug === slug);
 }
 
+/**
+ * Grok Bot agents are not Hermes processes on the Mac. Heartbeats, the
+ * gateway, and the dispatch box must not treat a missing Hermes profile
+ * as an outage. "Grok Bot" and "Grok Bot (…)" both match.
+ */
+export function isGrokBotRuntime(runtime: string | null | undefined): boolean {
+  return /^\s*grok\s*bot\b/i.test(runtime || "");
+}
+
 export const DEPARTMENTS = Array.from(new Set(AGENTS.map((a) => a.department))).sort((a, b) => {
   const order = ["Leadership", "Sales", "Marketing", "Admin & Customer Service", "Accounting & Finance", "Operations", "Shop", "Fieldwork", "Technical"];
   return order.indexOf(a) - order.indexOf(b);
