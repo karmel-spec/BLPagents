@@ -32,6 +32,18 @@
  * Click a face → straight into a chat with that agent.
  * Nothing about the app or the user is sent anywhere; the widget only reads
  * the identity the app already stores.
+ *
+ * Ask Eddy from another page (Marketing Engine video cards):
+ *   BLPAssistant.open("ed", {
+ *     app: "Marketing Engine",
+ *     serial: "48211",
+ *     piano: "Steinway M",
+ *     card: "https://blpmarketing.netlify.app/video?q=48211",
+ *     user: "Alisa"
+ *   });
+ * That opens /agents/ed/chat with those query params and also postMessages
+ * { type: "blp-agent-context", ... } to the popup. Set data-agents="" if this
+ * script should expose BLPAssistant.open without floating faces.
  */
 (function () {
   "use strict";
@@ -43,11 +55,15 @@
   var ORIGIN = (function () {
     try { return new URL(script.src).origin; } catch (e) { return "https://blpagents.netlify.app"; }
   })();
-  var AGENTS = (ds.agents || ds.agent || "clara,arnold,chris").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+  // data-agents="" means no floating faces (the page will call BLPAssistant.open).
+  // A missing attribute keeps the default set.
+  var agentList = ds.agents !== undefined ? ds.agents : (ds.agent !== undefined ? ds.agent : "clara,arnold,chris");
+  var AGENTS = String(agentList).split(",").map(function (s) { return s.trim(); }).filter(Boolean);
   var LABELS = {
     clara: "Message Clara — admin, scheduling, your inbox", arnold: "Message Arnold — sales & leads", chris: "Message Chris — the shop",
     ivory: "Message Ivory — tuning revenue & reactivation", melody: "Message Melody — admin & customer service",
-    marcus: "Message Marcus — marketing", lindsay: "Message Lindsay — operations, Karmel's assistant"
+    marcus: "Message Marcus — marketing", lindsay: "Message Lindsay — operations, Karmel's assistant",
+    ed: "Ask Eddy — video edits"
   };
   (ds.labels || "").split("|").forEach(function (pair) { var i = pair.indexOf(":"); if (i > 0) LABELS[pair.slice(0, i).trim()] = pair.slice(i + 1).trim(); });
   // Per-person helper sets: "brigham:clara,arnold,chris|lisa:ivory,arnold,chris|…"
@@ -59,12 +75,38 @@
   var MODE = ds.mode || "telegram";
   var BOTS = {
     clara: "claralarsonbot", arnold: "arnoldlarsonbot", chris: "chrislarsonbot", lindsay: "lindsaystrategistbot", carla: "carlalarsonbot",
-    ivory: "ivorylarsonbot", melody: "melodylarsonbot", marcus: "marcuslarsonbot"
+    ivory: "ivorylarsonbot", melody: "melodylarsonbot", marcus: "marcuslarsonbot", ed: "edlarsonbot"
   };
   (ds.bots || "").split("|").forEach(function (pair) { var i = pair.indexOf(":"); if (i > 0) BOTS[pair.slice(0, i).trim()] = pair.slice(i + 1).trim(); });
   var ALWAYS = ds.always === "1";
   var FOR = (ds.for || "brigham@brighamlarsonpianos.com,brighamlarson@gmail.com,brighamlarsonpianos@gmail.com,brigham")
     .split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+
+  /** Display name for Eddy context. Not lowercased, so the thread can show "Alisa". */
+  function displayUser() {
+    function from(v) {
+      if (!v) return "";
+      var s = String(v).replace(/^"|"$/g, "").trim();
+      if (!s || s.length > 80) return "";
+      return s;
+    }
+    if (ds.user) return from(ds.user);
+    if (window.BLP_CURRENT_USER) {
+      var cur = window.BLP_CURRENT_USER;
+      if (cur && typeof cur === "object") return from(cur.name || cur.email || "");
+      return from(cur);
+    }
+    if (!ds.userKey) return "";
+    try {
+      var raw = localStorage.getItem(ds.userKey);
+      if (!raw) return "";
+      try {
+        var o = JSON.parse(raw);
+        if (o && typeof o === "object") return from(o.name || o.email || o.user || "");
+      } catch (e) { /* plain string */ }
+      return from(raw);
+    } catch (e) { return ""; }
+  }
 
   function identity() {
     if (ds.user) return String(ds.user).toLowerCase();
@@ -118,6 +160,49 @@
   style.textContent = css;
   document.head.appendChild(style);
 
+  function chatUrl(slug, extra) {
+    var appName = (extra && extra.app) || ((ds.app || "BLP app") + (location.pathname && location.pathname !== "/" ? " " + location.pathname : ""));
+    var q = "app=" + encodeURIComponent(String(appName).slice(0, 120));
+    if (extra) {
+      ["serial", "piano", "card", "user", "text"].forEach(function (k) {
+        if (extra[k]) q += "&" + encodeURIComponent(k) + "=" + encodeURIComponent(String(extra[k]).slice(0, 500));
+      });
+    }
+    return ORIGIN + "/agents/" + slug + "/chat?" + q;
+  }
+  function openChat(slug, extra) {
+    var curl = chatUrl(slug, extra);
+    var cw = 460, ch = Math.min(820, Math.max(600, (window.screen && window.screen.availHeight || 800) - 80));
+    var cleft = Math.max(0, ((window.screen && window.screen.availWidth) || 1280) - cw - 40);
+    var cwin = window.open(curl, "blp-chat-" + slug, "popup=yes,width=" + cw + ",height=" + ch + ",left=" + cleft + ",top=40");
+    if (!cwin) cwin = window.open(curl, "_blank");
+    if (cwin && extra && (extra.serial || extra.piano || extra.card || extra.user || extra.text)) {
+      var payload = {
+        type: "blp-agent-context",
+        slug: slug,
+        app: extra.app || "",
+        serial: extra.serial || "",
+        piano: extra.piano || "",
+        card: extra.card || "",
+        user: extra.user || "",
+        text: extra.text || ""
+      };
+      var tries = 0;
+      var timer = setInterval(function () {
+        tries += 1;
+        try { cwin.postMessage(payload, ORIGIN); } catch (e) { /* popup not ready */ }
+        if (tries >= 8) clearInterval(timer);
+      }, 400);
+    }
+    return cwin;
+  }
+  window.BLPAssistant = {
+    open: function (slug, opts) {
+      if (!slug) return null;
+      return openChat(String(slug).trim(), opts || {});
+    }
+  };
+
   var stack = document.createElement("div");
   stack.className = "blpa-stack";
   var builtFor = "";
@@ -144,14 +229,12 @@
       // Agents with an in-app chat open their chat popup; the rest go to Telegram.
       // Chris (slug stays chris) opens this same chat. The console bridges it to Cristofori GrokBot.
       // Shift-click (or data-mode="console") opens the console page instead.
-      var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true, lindsay: true };
+      var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true, lindsay: true, ed: true };
       if (CHAT[slug] && !ev.shiftKey) {
-        var appName = (ds.app || "BLP app") + (location.pathname && location.pathname !== "/" ? " " + location.pathname : "");
-        var curl = ORIGIN + "/agents/" + slug + "/chat?app=" + encodeURIComponent(appName.slice(0, 120));
-        var cw = 460, ch = Math.min(820, Math.max(600, (window.screen && window.screen.availHeight || 800) - 80));
-        var cleft = Math.max(0, ((window.screen && window.screen.availWidth) || 1280) - cw - 40);
-        var cwin = window.open(curl, "blp-chat-" + slug, "popup=yes,width=" + cw + ",height=" + ch + ",left=" + cleft + ",top=40");
-        if (!cwin) window.open(curl, "_blank");
+        // Eddy gets the signed-in name so the thread shows who asked. Other faces keep the app-only URL.
+        var extra = slug === "ed" ? { user: displayUser() } : null;
+        if (extra && !extra.user) extra = null;
+        openChat(slug, extra);
         return;
       }
       if (MODE === "telegram" && BOTS[slug] && !ev.shiftKey) {

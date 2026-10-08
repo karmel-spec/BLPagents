@@ -252,6 +252,9 @@ input:focus-visible, textarea:focus-visible, .btn:focus-visible, a:focus-visible
 .chat-meta { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
 .chat-body { white-space: pre-wrap; font-size: 14px; line-height: 1.45; }
 .chat-quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.chat-search { width: 100%; margin: 0 0 8px; font: inherit; font-size: 13px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: var(--paper); color: inherit; }
+.chat-context { margin: 0 0 8px; }
+.chat-context a { text-decoration: underline; }
 .chat-form { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
 .chat-form textarea { flex: 1; font: inherit; font-size: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; background: var(--paper); color: inherit; }
 .chat-popup { display: flex; flex-direction: column; height: calc(100vh - 32px); }

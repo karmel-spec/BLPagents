@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { safeNext } from "@/lib/embed-origins";
 
 export default function LoginPage() {
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [next, setNext] = useState("/");
+
+  useEffect(() => {
+    setNext(safeNext(new URLSearchParams(window.location.search).get("next")));
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,7 +27,7 @@ export default function LoginPage() {
         const json = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(json.error || "Wrong passcode");
       }
-      window.location.href = "/";
+      window.location.href = safeNext(new URLSearchParams(window.location.search).get("next"));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -36,7 +42,7 @@ export default function LoginPage() {
         <img src="/blp-logo.png" alt="Brigham Larson Pianos" style={{ width: 200, maxWidth: "100%", height: "auto" }} />
         <div className="rule"><i /><b /><i /></div>
         <div className="caps" style={{ fontSize: 15 }}>AGENT CONSOLE</div>
-        <a className="btn" href="/api/auth/google" style={{ display: "block", margin: "20px 0 6px" }}>
+        <a className="btn" href={next === "/" ? "/api/auth/google" : `/api/auth/google?next=${encodeURIComponent(next)}`} style={{ display: "block", margin: "20px 0 6px" }}>
           Sign in with Google
         </a>
         <p className="muted" style={{ margin: "4px 0 14px", fontSize: 12 }}>@brighamlarsonpianos.com accounts — or use the team passcode:</p>

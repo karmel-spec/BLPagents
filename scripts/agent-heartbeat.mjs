@@ -22,8 +22,9 @@ const APP_URL = process.env.BLP_APP_URL || "https://blpsalesapp.netlify.app";
 const HERMES = path.join(HOME, ".hermes");
 
 /** Hermes profile name → agent registry slug (only where they differ).
- *  Eddy (slug `ed`) now runs as Eddy Bot on Grok Bot, not Hermes. Keep `eddy`
- *  mapped so a leftover Hermes heartbeat still lands on this agent. */
+ *  Eddy (slug `ed`) runs as Eddy Bot on Grok Bot. The `eddy` profile name still
+ *  maps to `ed`, and that profile is skipped below so a retired Hermes folder
+ *  does not mark him down. */
 const PROFILE_TO_SLUG = { eddy: "ed" };
 
 function key() {
@@ -141,7 +142,7 @@ all.push(...loadJobs(path.join(HERMES, "cron", "jobs.json"), "main"));
 const profilesDir = path.join(HERMES, "profiles");
 if (fs.existsSync(profilesDir)) {
   for (const p of fs.readdirSync(profilesDir)) {
-    if (p === "chris") continue; // Hermes profile retired; cloud heartbeat covers him
+    if (p === "chris" || p === "eddy") continue; // Hermes profiles retired; Chris is the cloud bridge, Eddy is Eddy Bot
     all.push(...loadJobs(path.join(profilesDir, p, "cron", "jobs.json"), p));
   }
 }
@@ -160,7 +161,7 @@ function openclawGatewayRunning() {
 const clawAgentsDir = path.join(HOME, ".openclaw", "agents");
 if (fs.existsSync(clawAgentsDir) && openclawGatewayRunning()) {
   for (const slug of fs.readdirSync(clawAgentsDir)) {
-    if (slug === "main" || slug === "chris" || slug.startsWith(".")) continue;
+    if (slug === "main" || slug === "chris" || slug === "ed" || slug === "eddy" || slug.startsWith(".")) continue;
     all.push({
       profile: slug,
       cron: {
@@ -187,7 +188,7 @@ all.push(...loadLaunchdServices(knownSlugs));
 const bySlug = new Map();
 for (const { profile, cron } of all) {
   const slug = PROFILE_TO_SLUG[profile] || profile;
-  if (slug === "chris") continue; // retired Hermes profile; cloud heartbeat covers him
+  if (slug === "chris" || slug === "ed") continue; // retired Hermes profiles; Chris is the cloud bridge, Eddy is Eddy Bot
   if (!knownSlugs.has(slug)) continue; // e.g. "main" store rows already carry their real profile
   if (!bySlug.has(slug)) bySlug.set(slug, []);
   bySlug.get(slug).push(cron);

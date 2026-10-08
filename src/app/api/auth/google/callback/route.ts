@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import { googleSessionToken, SESSION_COOKIE } from "@/lib/auth";
+import { safeNext } from "@/lib/embed-origins";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,8 @@ export async function GET(req: NextRequest) {
     }
 
     const firstName = (claims.given_name || claims.name || email.split("@")[0]).split(" ")[0];
-    const response = NextResponse.redirect(`${config.publicBaseUrl}/`);
+    const next = safeNext(req.nextUrl.searchParams.get("state"));
+    const response = NextResponse.redirect(`${config.publicBaseUrl}${next}`);
     response.cookies.set(SESSION_COOKIE, googleSessionToken(firstName, email), {
       httpOnly: true,
       sameSite: "lax",
