@@ -21,7 +21,9 @@ const HOME = os.homedir();
 const APP_URL = process.env.BLP_APP_URL || "https://blpsalesapp.netlify.app";
 const HERMES = path.join(HOME, ".hermes");
 
-/** Hermes profile name → agent registry slug (only where they differ). */
+/** Hermes profile name → agent registry slug (only where they differ).
+ *  Eddy (slug `ed`) now runs as Eddy Bot on Grok Bot, not Hermes. Keep `eddy`
+ *  mapped so a leftover Hermes heartbeat still lands on this agent. */
 const PROFILE_TO_SLUG = { eddy: "ed" };
 
 function key() {
