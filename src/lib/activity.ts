@@ -1,5 +1,6 @@
 import { readTab } from "./sheets";
 import { STATUS_TAB, type HeartbeatCron } from "./agent-health";
+import { isGrokbotSlug } from "./grokbot-shared";
 
 /**
  * Activity stream — derived from the same "Agent Status" tab as fleet
@@ -24,6 +25,9 @@ export async function readAgentActivity(limit = 120): Promise<ActivityEvent[]> {
   for (const r of rows.slice(1)) {
     const [slug, machine, reportedAt, , cronsJson] = r;
     if (!slug) continue;
+    // Ivory Grok Bot does not report a Mac heartbeat. Old Hermes cron rows
+    // would otherwise show as current failures on the activity page.
+    if (isGrokbotSlug(slug)) continue;
     let crons: HeartbeatCron[] = [];
     try {
       crons = JSON.parse(cronsJson || "[]");

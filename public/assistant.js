@@ -141,11 +141,12 @@
     tip.className = "blpa-tip";
     tip.textContent = label;
     btn.addEventListener("click", function (ev) {
-      // Agents with an in-app chat (vault-backed, no Hermes) open their chat popup; the rest go to Telegram.
-      // Shift-click (or data-mode="console") opens the console page instead.
+      // Agents with an in-app chat open their chat popup; the rest go to Telegram.
+      // Shift-click opens the console page instead.
+      // Ivory always opens that popup (never t.me/ivorylarsonbot). The popup posts to Ivory Grok Bot.
       var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true, lindsay: true };
-      if (CHAT[slug] && !ev.shiftKey) {
-        var curl = ORIGIN + "/agents/" + slug + "/chat";
+      if ((CHAT[slug] || slug === "ivory") && !ev.shiftKey) {
+        var curl = ORIGIN + "/agents/" + slug + "/chat" + (slug === "ivory" ? "?from=faces" : "");
         var cw = 460, ch = Math.min(820, Math.max(600, (window.screen && window.screen.availHeight || 800) - 80));
         var cleft = Math.max(0, ((window.screen && window.screen.availWidth) || 1280) - cw - 40);
         var cwin = window.open(curl, "blp-chat-" + slug, "popup=yes,width=" + cw + ",height=" + ch + ",left=" + cleft + ",top=40");

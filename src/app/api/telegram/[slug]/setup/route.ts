@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jsonError, requireSessionOrKey } from "@/lib/api";
 import { getAgent } from "@/lib/agents";
 import { config } from "@/lib/config";
+import { isGrokbotSlug } from "@/lib/grokbot-shared";
 import { allowedChats, botToken, deleteWebhook, getMe, getWebhookInfo, setWebhook, teamChatId } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ async function guard(req: NextRequest, ctx: { params: Promise<{ slug: string }> 
   const g = requireSessionOrKey(req);
   if (g) return { err: g };
   const { slug } = await ctx.params;
+  if (isGrokbotSlug(slug)) return { err: NextResponse.json({ error: "Ivory answers through Ivory Grok Bot. Do not register a Telegram webhook, and leave TELEGRAM_BOT_TOKEN_IVORY unset." }, { status: 410 }) };
   if (!/^[a-z0-9-]{1,40}$/.test(slug) || !getAgent(slug)) return { err: NextResponse.json({ error: "Unknown agent" }, { status: 404 }) };
   if (!botToken(slug)) return { err: NextResponse.json({ error: `TELEGRAM_BOT_TOKEN_${slug.toUpperCase()} is not set on this deployment` }, { status: 503 }) };
   return { slug };

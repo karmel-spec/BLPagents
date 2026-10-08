@@ -30,6 +30,9 @@ const LOG = path.join(HOME, ".hermes", "blp-dispatch-log.jsonl");
 const PORT = Number(process.env.BLP_GATEWAY_PORT || 8787);
 /** Private/family agents never appear in the business console. */
 const EXCLUDE = new Set(["diana"]);
+/** Cloud Grok Bot agents. Never proxy them to a Hermes profile (Ivory used
+ *  to be port 8644 on Karmel's Mac). Keep in sync with src/lib/grokbot-shared.ts. */
+const CLOUD_GROKBOT = new Set(["ivory"]);
 const HEALTH_TTL_MS = 30_000;
 
 function gatewayKey() {
@@ -60,7 +63,7 @@ function discoverAgents() {
   const agents = {};
   if (!fs.existsSync(PROFILES)) return agents;
   for (const slug of fs.readdirSync(PROFILES)) {
-    if (EXCLUDE.has(slug)) continue;
+    if (EXCLUDE.has(slug) || CLOUD_GROKBOT.has(slug)) continue;
     const envFile = path.join(PROFILES, slug, ".env");
     if (!fs.existsSync(envFile)) continue;
     const env = readEnv(envFile);
@@ -151,6 +154,7 @@ const server = http.createServer(async (req, res) => {
     const m = url.pathname.match(/^\/agents\/([a-z0-9-]+)\/(health|runs|dispatches)(?:\/([A-Za-z0-9_-]+))?$/);
     if (!m) return send(res, 404, { error: "not found" });
     const [, slug, what, id] = m;
+    if (CLOUD_GROKBOT.has(slug)) return send(res, 410, { error: `${slug} runs as Ivory Grok Bot in the cloud. This gateway does not dispatch to it.` });
     const agent = agents[slug];
     if (!agent) return send(res, 404, { error: `no Hermes runtime for "${slug}" on ${os.hostname()}` });
 

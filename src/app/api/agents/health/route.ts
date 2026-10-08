@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readAgentHealth } from "@/lib/agent-health";
 import { requireSession, jsonError } from "@/lib/api";
+import { AGENTS } from "@/lib/agents";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -24,6 +25,24 @@ export async function GET(req: NextRequest) {
         health.arnold.issues.push("tunnel unreachable from the internet (Mac asleep or cloudflared down)");
         if (health.arnold.dot === "healthy") health.arnold.dot = "attention";
       }
+    }
+
+    // Cloud Grok Bot agents (Ivory) are healthy without a Mac heartbeat.
+    // A stale Hermes row must not paint them offline.
+    for (const a of AGENTS) {
+      if (a.deviceHeartbeat !== false) continue;
+      health[a.slug] = {
+        slug: a.slug,
+        dot: "healthy",
+        machine: "Grok Bot (cloud)",
+        reportedAt: "",
+        fresh: true,
+        online: true,
+        cronsActive: 0,
+        cronsOk: 0,
+        issues: [],
+        note: "Cloud Grok Bot — no Mac heartbeat",
+      };
     }
 
     return NextResponse.json({ health });

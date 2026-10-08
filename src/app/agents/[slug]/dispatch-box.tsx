@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/client";
 import type { AgentConfig } from "@/lib/agents";
 import type { DispatchReceipt, DispatchRecord, RunStatus } from "@/lib/gateway";
+import { findGrokbotReply, GROKBOT_POLL_MS, GROKBOT_REPLY_TIMEOUT_MS, IVORY_MOVING_NOTICE, IVORY_TIMEOUT_NOTICE } from "@/lib/grokbot-shared";
 import { ago } from "../../fleet-shared";
 
 /**
@@ -31,9 +32,10 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
       .catch(() => {});
 
   const onGrokBot = /grok bot/i.test(agent.runtime || "");
+  const viaGrokbot = agent.provider === "grokbot";
 
   useEffect(() => {
-    if (onGrokBot) return;
+    if (onGrokBot || viaGrokbot) return;
     api<Live>("/api/agents/live")
       .then((l) => {
         setLive(l);
@@ -44,8 +46,10 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
       if (poll.current) clearInterval(poll.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agent.slug, onGrokBot]);
+  }, [agent.slug, onGrokBot, viaGrokbot]);
 
+  // Ivory's tasks go to Ivory Grok Bot (same thread as chat), never Hermes.
+  if (viaGrokbot) return <GrokbotDispatch agent={agent} />;
   // Eddy Bot answers on Grok Bot. Do not hand his tasks to a Hermes profile.
   if (onGrokBot) return null;
 
@@ -143,6 +147,126 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
         </div>
       )}
 
+      {recent.length > 0 && (
+        <div className="recent">
+          <div className="label">Recent tasks</div>
+          {recent.map((d) => (
+            <div key={d.run_id} className="recent-row">
+              <span className="mono">{ago(d.at)} ago</span>
+              <span className="who">{d.requester.replace(/<.*>/, "").trim()}</span>
+              <span className="what">{d.input.length > 120 ? d.input.slice(0, 120) + "…" : d.input}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+type GrokDispatch = {
+  at: string;
+  requester: string;
+  input: string;
+  run_id: string;
+  status: string;
+  output: string | null;
+};
+
+/** Dispatch box for Ivory: store the task, wake Ivory Grok Bot, wait for her row in the thread. */
+function GrokbotDispatch({ agent }: { agent: AgentConfig }) {
+  const [task, setTask] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [output, setOutput] = useState("");
+  const [recent, setRecent] = useState<GrokDispatch[]>([]);
+  const alive = useRef(true);
+
+  const loadRecent = () =>
+    api<{ dispatches: GrokDispatch[]; notice?: string }>(`/api/agents/${agent.slug}/dispatch`)
+      .then((r) => { setRecent(r.dispatches || []); if (r.notice) setNotice(r.notice); })
+      .catch((e) => setError(e.message));
+
+  useEffect(() => {
+    alive.current = true;
+    loadRecent();
+    return () => { alive.current = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agent.slug]);
+
+  async function send(e: React.FormEvent) {
+    e.preventDefault();
+    const input = task.trim();
+    if (!input || busy) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    setOutput("");
+    try {
+      const delivered = await api<{ provider?: string; status?: string; messageId?: number; notice?: string }>(`/api/agents/${agent.slug}/dispatch`, {
+        method: "POST",
+        body: JSON.stringify({ input }),
+      });
+      if (delivered.status === "moving") {
+        setNotice(delivered.notice || IVORY_MOVING_NOTICE);
+        setBusy(false);
+        return;
+      }
+      setTask("");
+      const messageId = delivered.messageId;
+      if (!messageId) throw new Error(`${agent.name} didn't take that task.`);
+      const t0 = Date.now();
+      let landed = false;
+      for (;;) {
+        if (!alive.current) return;
+        try {
+          const h = await api<{ messages: { id?: number; role: string; body: string; run_id?: string | null; reply_to?: number | null; meta?: { in_reply_to?: number | null } | null }[] }>(`/api/agents/${agent.slug}/chat?limit=80`);
+          const reply = findGrokbotReply(h.messages, messageId);
+          if (reply?.body) { setOutput(reply.body); landed = true; break; }
+        } catch { /* keep waiting through a blip */ }
+        if (Date.now() - t0 >= GROKBOT_REPLY_TIMEOUT_MS) break;
+        await new Promise((r) => setTimeout(r, GROKBOT_POLL_MS));
+      }
+      if (!landed) setNotice(IVORY_TIMEOUT_NOTICE);
+      loadRecent();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card dispatch">
+      <h2>Give {agent.name} a task</h2>
+      <div className="dispatch-grid">
+        <form onSubmit={send}>
+          <textarea
+            rows={4}
+            placeholder={`e.g. ${placeholderFor(agent)}`}
+            value={task}
+            onChange={(e) => setTask(e.target.value)}
+            disabled={busy}
+          />
+          <div className="dispatch-actions">
+            <button className="btn" disabled={busy || !task.trim()}>
+              {busy ? `${agent.name} is working on it…` : `Send to ${agent.name}`}
+            </button>
+            <span className="muted" style={{ fontSize: 11.5 }}>
+              Ivory Grok Bot, in the cloud · the reply lands in her chat thread
+            </span>
+          </div>
+        </form>
+        <aside className="dispatch-rules">
+          <div className="label">{agent.name} will never</div>
+          <p>{agent.boundaries.never}</p>
+          {agent.boundaries.voice && (<><div className="label" style={{ marginTop: 8 }}>Voice</div><p>{agent.boundaries.voice}</p></>)}
+        </aside>
+      </div>
+      {notice && <div className="banner warn">{notice}</div>}
+      {error && <div className="banner bad">⚠ {error}</div>}
+      {busy && <div className="muted" style={{ marginTop: 8 }}>{agent.name} is working on it…</div>}
+      {output && <pre className="run-output">{output}</pre>}
       {recent.length > 0 && (
         <div className="recent">
           <div className="label">Recent tasks</div>
