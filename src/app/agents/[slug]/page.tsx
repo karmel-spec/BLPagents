@@ -147,6 +147,22 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
               </>
             )}
           </div>
+
+          {(agent.vault?.playbook?.length || 0) > 0 && (
+            <div className="card">
+              <h2>Playbook</h2>
+              {agent.vault!.playbook!.map((section) => (
+                <div key={section.title} style={{ marginTop: 12 }}>
+                  <div className="label">{section.title}</div>
+                  <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                    {section.items.map((item, i) => (
+                      <li key={i} style={{ marginBottom: 4 }}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
