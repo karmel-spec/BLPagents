@@ -111,6 +111,30 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
       ["Drafting skill", "~/.hermes/profiles/arnold/skills/business-operations/blp-arnold-sales/"],
     ],
   },
+  chris: {
+    status: "live",
+    name: "Cristofori GrokBot",
+    tagline: "Cristofori GrokBot — shop manager. Drafts only: queue, stalls, before videos, and task cards from Brigham's notes.",
+    runtime: "Cristofori GrokBot (cloud)",
+    homeComputer: "Cloud (none)",
+    crons: "None. Shop Manager Briefing is the Store Map script at 7:44 AM MT, not a cron.",
+    telegram: "https://t.me/chrislarsonbot",
+    telegramActive: true,
+    schedule: [
+      { time: "7:44 AM", days: "Shop days", what: "Shop Manager Briefing (Store Map script, not a cron on this agent)", where: "BLP Shop Briefs" },
+    ],
+    boundaries: {
+      can: "Answer shop questions — queue, stalled pianos, missing stage, before-video status, QC readiness, attic and unplaced, duplicate spots — and draft task cards from Brigham's notes (owner, column, text starting with the serial, due).",
+      never: "Move a piano's stage, spot, or status · message customers, vendors, or the team (he drafts; a human sends) · handle pay, hours, discipline, hiring, or delivery-date promises · change a tech's calendar without confirmation",
+      voice: "Short and plain, the way the shop floor talks. A serial number in every line. Says could not verify rather than guessing. Signs — Chris.",
+    },
+    links: [
+      { name: "Message Chris (in the apps)", href: "/agents/chris/chat", note: "Store Map and Sales App buttons open this chat. Replies come from Cristofori GrokBot." },
+      { name: "Telegram @chrislarsonbot", href: "https://t.me/chrislarsonbot", note: "same assistant, after the webhook cutover" },
+      { name: "Store Map", href: "https://blpstoremap.netlify.app", note: "live shop truth" },
+      { name: "Shop briefs", href: "https://drive.google.com/drive/folders/1v_nxxfENOxS9BEXlFevQMFDOwTik_J3a", note: "Shop Manager Briefing, about 7:44 AM MT" },
+    ],
+  },
 };
 
 export const AGENTS: AgentConfig[] = (REGISTRY as Array<Record<string, unknown>>).map((r) => {

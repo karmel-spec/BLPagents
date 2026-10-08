@@ -92,7 +92,8 @@ function loadOpenClawJobs(storePath) {
 
 /**
  * launchd services named com.blp.<agent>-… report as that agent's
- * "service" entries (e.g. Chris's app server, Arnold's tunnel).
+ * "service" entries (e.g. Arnold's tunnel). Chris's old app server and
+ * weekly wizard are skipped — his health is the cloud bridge.
  */
 function loadLaunchdServices(knownSlugs) {
   const out = [];
@@ -107,6 +108,7 @@ function loadLaunchdServices(knownSlugs) {
     if (!m) continue;
     const [, pid, exitCode, label] = m;
     if (label === "com.blp.agent-heartbeat") continue; // that's us
+    if (label.startsWith("com.blp.chris")) continue; // legacy app server / weekly wizard
     const slug = label
       .replace("com.blp.", "")
       .split(/[-.]/)
@@ -137,6 +139,7 @@ all.push(...loadJobs(path.join(HERMES, "cron", "jobs.json"), "main"));
 const profilesDir = path.join(HERMES, "profiles");
 if (fs.existsSync(profilesDir)) {
   for (const p of fs.readdirSync(profilesDir)) {
+    if (p === "chris") continue; // Hermes profile retired; cloud heartbeat covers him
     all.push(...loadJobs(path.join(profilesDir, p, "cron", "jobs.json"), p));
   }
 }
@@ -155,7 +158,7 @@ function openclawGatewayRunning() {
 const clawAgentsDir = path.join(HOME, ".openclaw", "agents");
 if (fs.existsSync(clawAgentsDir) && openclawGatewayRunning()) {
   for (const slug of fs.readdirSync(clawAgentsDir)) {
-    if (slug === "main" || slug.startsWith(".")) continue;
+    if (slug === "main" || slug === "chris" || slug.startsWith(".")) continue;
     all.push({
       profile: slug,
       cron: {
@@ -182,6 +185,7 @@ all.push(...loadLaunchdServices(knownSlugs));
 const bySlug = new Map();
 for (const { profile, cron } of all) {
   const slug = PROFILE_TO_SLUG[profile] || profile;
+  if (slug === "chris") continue; // retired Hermes profile; cloud heartbeat covers him
   if (!knownSlugs.has(slug)) continue; // e.g. "main" store rows already carry their real profile
   if (!bySlug.has(slug)) bySlug.set(slug, []);
   bySlug.get(slug).push(cron);

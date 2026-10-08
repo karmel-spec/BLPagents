@@ -31,6 +31,8 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
       .catch(() => {});
 
   useEffect(() => {
+    // Chris no longer runs on the Hermes gateway. Shop questions go through the chat bridge.
+    if (agent.slug === "chris") return;
     api<Live>("/api/agents/live")
       .then((l) => {
         setLive(l);
@@ -43,6 +45,7 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent.slug]);
 
+  if (agent.slug === "chris") return null;
   if (liveError) return <div className="banner bad">⚠ Agent gateway: {liveError}</div>;
   if (!live) return null;
   if (!live.configured) return null; // gateway not set up on this deployment — nothing to show
