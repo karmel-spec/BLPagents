@@ -47,8 +47,14 @@ export const MINDS: Record<string, { core: string[]; folders: string[]; tools: s
 MINDS.clara = {
   core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/clara/SOUL.md", "Agents/clara/STATUS.md", "Agents/clara/BRIEF_SOURCES.md", "Agents/clara/INBOX_CLEANUP.md", "Agents/clara/ENGAGEMENT_IDEAS.md", "Agents/clara/TRAINING_PLAN.md"],
   folders: ["Agents/clara", "kb"],
-  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", ...MAIL_TOOLS],
-  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand and look up customers in the Sales Console. You cannot read or send email from here — if something needs Brigham's inbox, say so and describe what you'd do.",
+  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", "quickbooks_lookup", ...MAIL_TOOLS],
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand, look up customers in the Sales Console, and look customers up in QuickBooks (read-only: invoices, balances, payments; admin-side only, never shared with the shop). You cannot send email from here — if something needs Brigham's inbox, say so and describe what you'd do.",
+};
+MINDS.lindsay = {
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/lindsay/SOUL.md", "Agents/lindsay/OPEN_ASKS.md", "Agents/lindsay/kb/INDEX.md", "Agents/lindsay/kb/karmel.md", "Agents/lindsay/kb/people.md", "Agents/lindsay/kb/fleet.md", "Agents/lindsay/kb/reports.md", "Agents/lindsay/kb/email-triage.md", "Agents/lindsay/kb/vault-map.md"],
+  folders: ["Agents/lindsay", "Agents/lindsay/kb", "kb"],
+  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", "quickbooks_lookup"],
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, usually Karmel. You can read any vault file on demand, look up customers in the Sales Console, and look customers up in QuickBooks (read-only: invoices, balances, payments). QuickBooks figures are admin-side only — never pass prices or balances to the shop.",
 };
 MINDS.chris = {
   core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/chris/SOUL.md", "Agents/chris/SHOP_SOURCES.md", "Agents/chris/KB/INDEX.md", "Agents/chris/KB/domain-notes-and-roster.md", "Agents/chris/KB/phase-time-standards.md", "Agents/chris/KB/training-and-timeclock.md", "Agents/chris/KB/store-map-readme.md"],
@@ -96,6 +102,7 @@ const TOOL_DEFS: Record<string, { name: string; description: string; input_schem
   lookup_lead: { name: "lookup_lead", description: "Full detail for one lead (contact, notes, timeline of texts/emails/calls, pending drafts) by its id from search_leads.", input_schema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
   search_shop_pianos: { name: "search_shop_pianos", description: "Look pianos up on the live Store Map (the Piano Log): serial, make/model, owner, location/slot, shop phase and phases done, queue position, track, price, wait/phase notes. Query matches serial, summary, owner or location; empty query = the shop queue in order.", input_schema: { type: "object", properties: { query: { type: "string" }, limit: { type: "number" } } } },
   save_top_ten: { name: "save_top_ten", description: "TASK MODE ONLY. Save the day's ranked Top Ten (leads a human should reach TODAY) to the Sales Console so Brigham's screen shows it. Call once per morning brief with exactly the ranked list you report.", input_schema: { type: "object", properties: { items: { type: "array", items: { type: "object", properties: { rank: { type: "number" }, leadId: { type: "string" }, leadName: { type: "string" }, reason: { type: "string", description: "one line: why today + next move" } }, required: ["rank", "leadId", "leadName", "reason"] } } }, required: ["items"] } },
+  quickbooks_lookup: { name: "quickbooks_lookup", description: "Look a customer up in QuickBooks Online (read-only, via the Sales Console): matching customers with balance, their invoices (number, date, total, balance, line items, link) and optionally payments. Query by name or email. Admin-side only — never share these figures with the shop.", input_schema: { type: "object", properties: { query: { type: "string", description: "customer name or email" }, payments: { type: "boolean", description: "also list payments" } }, required: ["query"] } },
   save_drafts: { name: "save_drafts", description: "Save follow-up drafts on a lead in the Sales Console for a rep to approve and send (the only write you may do). Never claims to have sent anything.", input_schema: { type: "object", properties: { leadId: { type: "string" }, drafts: { type: "array", items: { type: "object", properties: { channel: { type: "string", enum: ["sms", "email"] }, subject: { type: "string" }, body: { type: "string" }, note: { type: "string" } }, required: ["channel", "body"] } } }, required: ["leadId", "drafts"] } },
 };
 
@@ -202,6 +209,14 @@ async function runTool(name: string, input: Record<string, unknown>, ctx: ToolCt
       const r = await fetch(`${SALES_APP}/api/top-ten?scope=brigham`, { method: "POST", headers: { "x-blp-key": SALES_KEY, "content-type": "application/json" }, body: JSON.stringify({ items, who: "Arnold", scope: "brigham" }), signal: AbortSignal.timeout(20000) });
       const t = await r.text();
       return r.ok ? `Top Ten saved in the Sales Console: ${t.slice(0, 200)}` : `Top Ten save failed (${r.status}): ${t.slice(0, 300)}`;
+    }
+    if (name === "quickbooks_lookup") {
+      if (!SALES_KEY) return "QuickBooks lookup unavailable: BLP_ARNOLD_ACCESS_KEY not set on the console.";
+      const r = await fetch(`${SALES_APP}/api/qbo/lookup?q=${encodeURIComponent(s(input.query))}${input.payments ? "&payments=1" : ""}`, { headers: { "x-blp-key": SALES_KEY }, signal: AbortSignal.timeout(25000), cache: "no-store" });
+      const t = await r.text();
+      if (!r.ok) return `QuickBooks lookup failed (${r.status}): ${t.slice(0, 200)}`;
+      try { const j = JSON.parse(t) as { connected?: boolean; hint?: string; matches?: unknown[] }; if (j.connected === false) return `QuickBooks isn't connected yet: ${j.hint}`; if (!j.matches?.length) return `No QuickBooks customer matches "${s(input.query)}".`; } catch { /* fall through */ }
+      return t.slice(0, 60000);
     }
     if (name === "save_drafts") {
       const r = await fetch(`${SALES_APP}/api/arnold/draft`, { method: "POST", headers: { "x-blp-key": SALES_KEY, "content-type": "application/json" }, body: JSON.stringify({ leadId: s(input.leadId), drafts: input.drafts }), signal: AbortSignal.timeout(20000) });

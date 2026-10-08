@@ -143,7 +143,7 @@
     btn.addEventListener("click", function (ev) {
       // Agents with an in-app chat (vault-backed, no Hermes) open their chat popup; the rest go to Telegram.
       // Shift-click (or data-mode="console") opens the console page instead.
-      var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true };
+      var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true, lindsay: true };
       if (CHAT[slug] && !ev.shiftKey) {
         var curl = ORIGIN + "/agents/" + slug + "/chat";
         var cw = 460, ch = Math.min(820, Math.max(600, (window.screen && window.screen.availHeight || 800) - 80));
