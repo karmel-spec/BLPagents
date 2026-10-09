@@ -142,3 +142,7 @@ chat.postMessage({
 ```
 
 The Google session name is the sender on the message. `user` fills the sender only when the console session is the shared passcode (`Team`). The name is also sent inside `context` either way. Env vars are listed in `.env.example`.
+
+## Fleet-wide Grok Bot relay (every other agent)
+
+Brigham, 2026-10-08: all agents move from Hermes to Grok Bots. Ivory, Chris and Eddy keep the per-agent bridges above. Every other agent (Clara, Arnold, Lindsay, Melody, Marcus, Carla) uses one relay: `src/lib/engine.ts` picks the engine (`grokbot` once `GROKBOT_WEBHOOK_URL_<SLUG>` is set, else the in-app `claude` runner), `src/lib/grokbot-relay.ts` wakes the Bot's routine webhook with the job and closes the job when the Bot answers through the MCP server `/api/mcp/<slug>` (tools: `load_mind`, `open_jobs`, `get_job`, `thread_history`, `reply_to_team`, `append_vault_note` plus the agent's own tool set — vault read, Sales Console lookups, Store Map pianos, QuickBooks, approval-gated mail). Plain side door: `GET/POST /api/agents/<slug>/reply`. Sales Console events: `POST /api/agents/<slug>/events` (HMAC, `SALES_EVENTS_SECRET`). Per-agent setup packet with paste-ready Bot instructions: `GET /api/agents/<slug>/grokbot?key=…&format=md`. Other BLP apps call `POST /api/agents/<slug>/chat` with the team key and `{message, who, email, channelNote?, systemNote?}`; `/api/agents/live` reports each agent's engine. Design and recipe: vault `kb/grokbot-relay.md`.

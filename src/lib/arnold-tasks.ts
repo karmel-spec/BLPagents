@@ -168,6 +168,32 @@ export async function writeVaultStatus(taskId: string, status: string, jobId: nu
   return r.commitUrl;
 }
 
+/** The prompt for one task, with the facts prefetched by code (shared by both engines). */
+export async function taskPrompt(taskId: string): Promise<{ prompt: string; systemNote: string; channelNote: string }> {
+  if (!TASKS[taskId]) throw new Error(`Unknown task ${taskId}`);
+  const prompt = taskId === "predraft" ? await predraftPrompt() : taskId === "daily-brief" ? await dailyBriefPrompt() : await briefingPrompt();
+  return { prompt, systemNote: TASK_MODE_NOTE, channelNote: "You are running a scheduled task in the cloud runtime (no chat window)." };
+}
+
+/** Deliver a finished task: team Telegram post (when the task posts), vault STATUS line, summary. */
+export async function finishTask(job: Job, r: { reply: string; tools: string[]; ok: boolean; status: string }): Promise<NonNullable<Job["result"]>> {
+  const taskId = s(job.payload?.task);
+  const t = TASKS[taskId];
+  let { status } = r;
+  const result: NonNullable<Job["result"]> = { reply: r.reply, tools: r.tools };
+  if (r.ok && t?.postToTeam && r.reply) {
+    if (telegramConfigured(AGENT) && teamChatId()) {
+      try { result.telegramMessageIds = await sendMessage(AGENT, teamChatId(), r.reply); }
+      catch (e) { status += ` · Telegram post failed: ${(e instanceof Error ? e.message : String(e)).slice(0, 80)}`; }
+    } else status += " · not posted to Telegram (TELEGRAM_BOT_TOKEN_ARNOLD / TELEGRAM_CHAT_ID unset)";
+  }
+  try { result.vaultCommit = (await writeVaultStatus(taskId, status, job.id, r.ok)) || undefined; }
+  catch (e) { status += ` · vault STATUS not written: ${(e instanceof Error ? e.message : String(e)).slice(0, 80)}`; }
+  if (!r.ok) throw new Error(status);
+  result.summary = status;
+  return result;
+}
+
 async function runTask(job: Job): Promise<NonNullable<Job["result"]>> {
   const taskId = s(job.payload?.task);
   const t = TASKS[taskId];
@@ -177,25 +203,14 @@ async function runTask(job: Job): Promise<NonNullable<Job["result"]>> {
   let status = "";
   let ok = true;
   try {
-    const prompt = taskId === "predraft" ? await predraftPrompt() : taskId === "daily-brief" ? await dailyBriefPrompt() : await briefingPrompt();
-    const out = await askAgent(AGENT, job.who || "Scheduler", "", prompt, job.id, { via: "schedule", systemNote: TASK_MODE_NOTE, maxTurns: t.maxTurns, maxTokens: t.maxTokens, extraTools: t.extraTools, freshContext: true, storePrompt: false, channelNote: `You are running a scheduled task in the cloud runtime (no chat window).`, meta: { task: taskId } });
+    const p = await taskPrompt(taskId);
+    const out = await askAgent(AGENT, job.who || "Scheduler", "", p.prompt, job.id, { via: "schedule", systemNote: p.systemNote, maxTurns: t.maxTurns, maxTokens: t.maxTokens, extraTools: t.extraTools, freshContext: true, storePrompt: false, channelNote: p.channelNote, meta: { task: taskId } });
     tools = out.tools;
     const sp = splitStatus(out.reply);
     reply = sp.body; status = sp.status;
   } catch (e) {
     ok = false; status = `failed: ${(e instanceof Error ? e.message : String(e)).slice(0, 140)}`;
   }
-  const result: NonNullable<Job["result"]> = { reply, tools };
-  if (ok && t.postToTeam && reply) {
-    if (telegramConfigured(AGENT) && teamChatId()) {
-      try { result.telegramMessageIds = await sendMessage(AGENT, teamChatId(), reply); }
-      catch (e) { status += ` · Telegram post failed: ${(e instanceof Error ? e.message : String(e)).slice(0, 80)}`; }
-    } else status += " · not posted to Telegram (TELEGRAM_BOT_TOKEN_ARNOLD / TELEGRAM_CHAT_ID unset)";
-  }
-  try { result.vaultCommit = (await writeVaultStatus(taskId, status, job.id, ok)) || undefined; }
-  catch (e) { status += ` · vault STATUS not written: ${(e instanceof Error ? e.message : String(e)).slice(0, 80)}`; }
-  if (!ok) throw new Error(status);
-  result.summary = status;
-  return result;
+  return finishTask(job, { reply, tools, ok, status });
 }
-registerTaskRunner(AGENT, runTask);
+registerTaskRunner(AGENT, runTask, { prompt: taskPrompt, finish: (job, reply, tools) => { const sp = splitStatus(reply); return finishTask(job, { reply: sp.body, tools, ok: true, status: sp.status || "done (Grok Bot)" }); } });

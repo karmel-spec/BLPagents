@@ -9,6 +9,13 @@
  * Replies take longer than a Netlify request allows, so each message is a
  * job (agent_jobs): the API inserts it, kicks the background function, and
  * the page polls until it's done. Locally (next dev) the job runs inline.
+ *
+ * 2026-10-08 (Brigham): the fleet moves to Grok Bots. Ivory, Chris and Eddy
+ * have their own bridges (grokbot.ts, grokbot-bridge.ts). Every other agent
+ * uses the fleet-wide relay (src/lib/engine.ts + grokbot-relay.ts): engine
+ * "grokbot" wakes the agent's Grok Bot and lets it answer through the MCP
+ * server at /api/mcp/<slug>; engine "claude" is this file's own runner, kept
+ * as the fallback for agents whose Bot isn't wired yet.
  */
 import { getFile, listDir, vaultConfigured } from "./vault-github";
 import { supa, supaConfigured } from "./supa";
@@ -17,6 +24,7 @@ import { config } from "./config";
 import { backendFor, createFilter, forwardInternal, getMessage, labelAndArchive, mailboxConfigured, searchMail, unsubscribe } from "./mail";
 import { markExecuted, requireApproval } from "./agent-approvals";
 import { isGrokbotSlug } from "./grokbot-shared";
+import { engineFor, grokbotConfigured } from "./engine";
 
 /** Which mailboxes each agent may open (its own credential, per AGENT_ARCHITECTURE Rule 1). */
 const MAILBOXES: Record<string, string[]> = {
@@ -79,8 +87,28 @@ MINDS.marcus = {
  * Eddy (slug `ed`) is answered by Eddy Bot only — never MINDS / Claude / Hermes.
  * Ivory is separate: isGrokbotSlug, her own webhook payload, and a Supabase write-back.
  */
+MINDS.melody = {
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/melody/SOUL.md", "Agents/melody/AGENTS.md", "Agents/melody/IDENTITY.md", "Agents/melody/STATUS.md", "Agents/melody/MEMORY.md", "Agents/melody/INBOX_CLEANUP.md", "Agents/melody/customer-service-playbook.md"],
+  folders: ["Agents/melody", "kb"],
+  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", ...MAIL_TOOLS],
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand, look customers up in the Sales Console, and work the info@ / karmel@ mailboxes only on approved cleanup rows (never trash, never unsubscribe business-record senders). Nothing you write here is sent to a customer.",
+};
+MINDS.carla = {
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/carla/SOUL.md", "Agents/carla/FLEET_SOURCES.md", "Agents/carla/STATUS.md"],
+  folders: ["Agents/carla", "kb"],
+  tools: ["read_vault_file", "list_vault_folder"],
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, usually Karmel. You manage the vehicles (fleet = vehicles at BLP). You can read any vault file on demand; the FLEET LOG sheet is your source of truth — say when a fact isn't in it.",
+};
 export const GROKBOT_CHAT_ONLY = new Set(["ed"]);
-export const chatEnabled = (slug: string) => Boolean(MINDS[slug]) || GROKBOT_CHAT_ONLY.has(slug) || isGrokbotSlug(slug);
+/** An agent can be chatted with when it has an in-app mind, a per-agent bridge (Ivory/Chris/Eddy), or a Grok Bot wired through the fleet relay. */
+export const chatEnabled = (slug: string) => Boolean(MINDS[slug]) || GROKBOT_CHAT_ONLY.has(slug) || isGrokbotSlug(slug) || grokbotConfigured(slug);
+/** Is the engine that will answer this agent configured on this deployment? (Bridged agents answer this in their own routes.) */
+export const agentReady = (slug: string) => (engineFor(slug) === "grokbot" ? supaConfigured() && vaultConfigured() : engineFor(slug) === "bridge" ? supaConfigured() : brainConfigured() && Boolean(MINDS[slug]));
+/** Tool definitions an engine may use for this agent (chat set + task-only extras). */
+export function toolsFor(slug: string, extra: string[] = []): { name: string; description: string; input_schema: Record<string, unknown> }[] {
+  const m = MINDS[slug];
+  return Array.from(new Set([...(m?.tools || ["read_vault_file", "list_vault_folder"]), ...extra])).map((t) => TOOL_DEFS[t]).filter(Boolean);
+}
 
 // ---------------------------------------------------------------- mind (vault)
 const mindCache = new Map<string, { at: number; text: string }>();
@@ -135,7 +163,7 @@ Object.assign(TOOL_DEFS, {
   forward_to_teammate: { name: "forward_to_teammate", description: "APPROVED ROWS ONLY. Forward one message to a BLP mailbox (@brighamlarsonpianos.com) with a one-line note. Never to anyone outside BLP.", input_schema: { type: "object", properties: { mailbox: { type: "string" }, id: { type: "string" }, to: { type: "string" }, note: { type: "string" }, ...APPROVAL_INPUT }, required: ["mailbox", "id", "to", "proposal", "row"] } },
 });
 
-interface ToolCtx { slug: string; jobId?: number }
+export interface ToolCtx { slug: string; jobId?: number }
 function ownMailbox(ctx: ToolCtx, mailbox: string): string {
   const mb = s(mailbox).toLowerCase();
   if (!(MAILBOXES[ctx.slug] || []).includes(mb)) throw new Error(`${ctx.slug} may not open ${mb} — allowed: ${(MAILBOXES[ctx.slug] || []).join(", ") || "none"}`);
@@ -145,7 +173,7 @@ function ownMailbox(ctx: ToolCtx, mailbox: string): string {
   return mb;
 }
 
-async function runTool(name: string, input: Record<string, unknown>, ctx: ToolCtx = { slug: "" }): Promise<string> {
+export async function runTool(name: string, input: Record<string, unknown>, ctx: ToolCtx = { slug: "" }): Promise<string> {
   try {
     if (name === "search_mail") {
       const mb = ownMailbox(ctx, s(input.mailbox));
@@ -278,7 +306,7 @@ async function anthropic(body: Record<string, unknown>, maxTokens = 2500): Promi
 }
 
 /** Where a turn came from. The agent is told, so it knows who it heard from and where the reply lands. */
-export type Via = "console" | "telegram" | "schedule";
+export type Via = "console" | "telegram" | "schedule" | "event";
 
 export interface AskOptions {
   via?: Via;
@@ -311,7 +339,7 @@ export async function askAgent(slug: string, who: string, whoEmail: string, mess
   const now = new Date().toLocaleString("en-US", { timeZone: "America/Denver", weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
   // The console intro opens with "You are chatting inside the BLP Agent Console (a web app), not Telegram." — swap that for the real channel.
   const intro = o.channelNote ? m.intro.replace(/^You are chatting inside the BLP Agent Console \(a web app\), not Telegram\.\s*/, `${o.channelNote.trim()} `) : m.intro;
-  const talking = via === "schedule" ? `No human is typing: this turn was started by ${who} (the cloud scheduler).` : `You are talking with ${who}${whoEmail ? ` (${whoEmail})` : ""}.`;
+  const talking = via === "schedule" ? `No human is typing: this turn was started by ${who} (the cloud scheduler).` : via === "event" ? `No human is typing: this turn was raised by ${who} (an automated Sales Console event).` : `You are talking with ${who}${whoEmail ? ` (${whoEmail})` : ""}.`;
   const thread = via === "schedule" ? "" : " The thread you see is shared across the Agent Console and Telegram, so earlier turns may have come from other teammates on other devices.";
   const system = [
     { type: "text", text: `${intro}\n\nToday is ${now} (Mountain time). ${talking}${thread} Keep replies short and useful: recommendation first, details second. Use tools when a question depends on live lead facts or a file you haven't been given — never guess at facts you can look up. If something isn't in the vault or the Sales Console, say so plainly.${o.systemNote ? `\n\n${o.systemNote.trim()}` : ""}\n\nYOUR MIND (live from the BLP Knowledge Vault repo):`, cache_control: { type: "ephemeral" } },
@@ -363,8 +391,19 @@ export interface JobPayload {
   conversation_id?: string;
   /** Optional opener context (serial, piano, card_url, user, …). */
   context?: Record<string, string>;
+  /** Extra channel description from another BLP app (Store Map, Marketing app) sent with the team key. */
+  channelNote?: string;
+  /** Extra instructions for this one turn (task mode note, an app's draft format…). */
+  systemNote?: string;
+  /** Sales Console event that created this job (draft_request, inbound_reply, team_task…). */
+  event?: { name: string; postToTeam?: boolean };
+  /** Fleet relay bookkeeping (see grokbot-relay.ts). */
+  engine?: "grokbot" | "claude";
+  wokeAt?: string;
+  deadline?: string;
+  wakeMessage?: string;
 }
-export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; summary?: string; telegramMessageIds?: number[]; vaultCommit?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
+export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; summary?: string; telegramMessageIds?: number[]; vaultCommit?: string; engine?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
 
 export const onNetlify = () => Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
 
@@ -378,8 +417,32 @@ export async function getJob(id: number): Promise<Job | null> {
 }
 /** Per-agent task runners, registered by <slug>-tasks.ts so this module needn't import them (avoids a cycle). */
 type TaskRunner = (job: Job) => Promise<NonNullable<Job["result"]>>;
+/** Grok Bot engine hooks: build the task prompt for the wake, and finish (deliver + STATUS line) once the Bot replies. */
+export interface TaskHooks {
+  prompt: (taskId: string) => Promise<{ prompt: string; systemNote: string; channelNote?: string }>;
+  finish: (job: Job, reply: string, tools: string[]) => Promise<NonNullable<Job["result"]>>;
+}
 const taskRunners: Record<string, TaskRunner> = {};
-export const registerTaskRunner = (agent: string, fn: TaskRunner) => { taskRunners[agent] = fn; };
+const taskHooks: Record<string, TaskHooks> = {};
+export const registerTaskRunner = (agent: string, fn: TaskRunner, hooks?: TaskHooks) => { taskRunners[agent] = fn; if (hooks) taskHooks[agent] = hooks; };
+export async function loadTaskHooks(agent: string): Promise<TaskHooks> {
+  await loadTaskRunner(agent);
+  const h = taskHooks[agent];
+  if (!h) throw new Error(`No task hooks for ${agent}`);
+  return h;
+}
+/** How the agent is told where a turn came from — shared by both engines. */
+export function channelNoteFor(job: Job, botUsername?: string): string {
+  const p = job.payload || {};
+  if (job.kind === "telegram" && p.telegram) {
+    const t = p.telegram;
+    const where = t.chatType === "private" ? "in a private Telegram chat" : `in the Telegram group "${t.chatTitle || "BLP"}"`;
+    return `You are chatting on Telegram as the bot @${botUsername || `${job.agent}larsonbot`}, ${where}. The person who wrote to you is a BLP teammate. Telegram shows plain text with light formatting: no tables, keep bullets short.`;
+  }
+  if (job.kind === "task") return "You are running a scheduled task in the cloud runtime (no chat window).";
+  if (p.event) return `This turn is an automated event from the BLP Sales Console (${p.event.name}), not a person typing. Do the work it describes with your tools and report briefly; drafts always wait for a rep's approval.`;
+  return p.channelNote || "";
+}
 /** Agents with a scheduled-task module (src/lib/<slug>-tasks.ts). */
 export const TASK_AGENTS = ["arnold", "clara"] as const;
 export async function loadTaskRunner(agent: string): Promise<TaskRunner> {
@@ -407,6 +470,29 @@ export async function runJob(id: number): Promise<Job | null> {
     await supa(`agent_jobs?id=eq.${id}&status=eq.running`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "pending", started_at: null }) });
     return getJob(id);
   }
+  const fail = async (msg: string) => {
+    await supa(`agent_jobs?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "failed", error: msg, finished_at: new Date().toISOString() }) });
+    if (job.kind === "telegram" && job.payload?.telegram) {
+      try { const { sendMessage } = await import("./telegram"); await sendMessage(job.agent, job.payload.telegram.chatId, `Sorry — I hit an error and couldn't answer: ${msg.slice(0, 200)}`); } catch { /* best effort */ }
+    }
+  };
+  // Fleet relay (engine "grokbot"): wake the agent's Grok Bot and leave the job running; grokbot-relay.completeGrokJob closes it when the Bot replies.
+  if (engineFor(job.agent) === "grokbot") {
+    try {
+      const { wakeGrokBot } = await import("./grokbot-relay");
+      if (job.kind === "task") {
+        const hooks = await loadTaskHooks(job.agent);
+        const pr = await hooks.prompt(String(job.payload?.task || ""));
+        await wakeGrokBot(job, { message: pr.prompt, systemNote: pr.systemNote, channelNote: pr.channelNote });
+      } else {
+        if (job.kind === "telegram" && job.payload?.telegram) { try { const { typing } = await import("./telegram"); await typing(job.agent, job.payload.telegram.chatId); } catch { /* ignore */ } }
+        await wakeGrokBot(job);
+      }
+    } catch (e) {
+      await fail((e instanceof Error ? e.message : String(e)).slice(0, 1000));
+    }
+    return getJob(id);
+  }
   try {
     let result: NonNullable<Job["result"]>;
     if (job.kind === "task") {
@@ -422,8 +508,15 @@ export async function runJob(id: number): Promise<Job | null> {
       try { result.telegramMessageIds = await sendMessage(job.agent, t.chatId, result.reply || "…", { replyTo: t.chatType === "private" ? undefined : t.messageId }); }
       catch (e) { result.summary = `reply not delivered: ${e instanceof Error ? e.message : String(e)}`; }
     } else {
-      result = await askAgent(job.agent, job.who, job.who_email, String(job.payload?.message || ""), id);
+      const note = channelNoteFor(job);
+      const via: Via = job.payload?.event ? "event" : "console";
+      result = await askAgent(job.agent, job.who, job.who_email, String(job.payload?.message || ""), id, { via, ...(note ? { channelNote: note } : {}), ...(job.payload?.systemNote ? { systemNote: job.payload.systemNote } : {}), ...(job.payload?.event ? { meta: { event: job.payload.event.name } } : {}) });
+      if (job.payload?.event?.postToTeam && result.reply) {
+        try { const { sendMessage, teamChatId, telegramConfigured } = await import("./telegram"); if (telegramConfigured(job.agent) && teamChatId()) result.telegramMessageIds = await sendMessage(job.agent, teamChatId(), result.reply); }
+        catch (e) { result.summary = `team post failed: ${e instanceof Error ? e.message : String(e)}`; }
+      }
     }
+    result.engine = "claude";
     await supa(`agent_jobs?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "done", result, finished_at: new Date().toISOString() }) });
   } catch (e) {
     const msg = (e instanceof Error ? e.message : String(e)).slice(0, 1000);

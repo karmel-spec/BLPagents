@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSessionOrKey, jsonError } from "@/lib/api";
 import { getJob } from "@/lib/agent-brain";
+import { expireIfStale } from "@/lib/grokbot-relay";
 
 export const dynamic = "force-dynamic";
 
@@ -10,9 +11,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   if (guard) return guard;
   try {
     const { slug, id } = await ctx.params;
-    const job = await getJob(Number(id));
+    const job = await expireIfStale(await getJob(Number(id)));
     if (!job || job.agent !== slug) return NextResponse.json({ error: "No such job" }, { status: 404 });
-    return NextResponse.json({ status: job.status, kind: job.kind, ...(job.result || {}), error: job.error || undefined });
+    return NextResponse.json({ status: job.status, kind: job.kind, engine: job.payload?.engine || "claude", ...(job.result || {}), error: job.error || undefined });
   } catch (err) {
     return jsonError(err);
   }

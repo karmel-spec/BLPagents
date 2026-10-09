@@ -1,7 +1,9 @@
 /**
  * BACKGROUND function (up to 15 min): runs one agent job — a console chat,
- * a Telegram turn (reply goes back through the Bot API) or one of Arnold's
- * scheduled tasks — and stores the result in agent_jobs (+ agent_messages). Triggered by the console's
+ * a Telegram turn (reply goes back through the Bot API), a Sales Console event
+ * or a scheduled task. Engine "claude" answers here and stores the result;
+ * engine "grokbot" only wakes the agent's Grok Bot (the Bot answers later
+ * through /api/mcp/<slug> → reply_to_team). Triggered by the console's
  * /api/agents/[slug]/chat with the team key.
  *   POST {jobId}   header x-blp-key: BLP_APP_ACCESS_KEY
  */

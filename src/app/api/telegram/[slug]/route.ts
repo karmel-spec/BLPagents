@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAgent } from "@/lib/agents";
-import { brainConfigured, chatEnabled, createJob, dispatchJob } from "@/lib/agent-brain";
+import { agentReady, chatEnabled, createJob, dispatchJob } from "@/lib/agent-brain";
+import { engineFor } from "@/lib/engine";
 import { isGrokbotSlug } from "@/lib/grokbot-shared";
 import { receiveChrisTelegram } from "@/lib/chris-bridge";
 import { bridgeFor } from "@/lib/grokbot-bridge";
@@ -63,10 +64,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
     const clean = text.replace(/@\w+bot\b/gi, "").trim();
     if (/^\/start\b/.test(clean)) {
       const a = getAgent(slug)!;
-      await sendMessage(slug, chatId, `Hi ${msg.from.first_name || "there"}, ${a.name} here — ${a.role}. Running in the cloud now (BLP Agent Console), so I'm here even when the shop Mac is asleep. Ask me anything; I can read the vault and the Sales Console, and I only ever save drafts for a rep to approve.`);
+      await sendMessage(slug, chatId, `Hi ${msg.from.first_name || "there"}, ${a.name} here — ${a.role}. ${engineFor(slug) === "grokbot" ? "I run as a Grok Bot now, reached through the BLP Agent Console" : "Running in the cloud now (BLP Agent Console)"}, so I'm here even when the shop Mac is asleep. Ask me anything; I can read the vault and the Sales Console, and I only ever save drafts for a rep to approve.`);
       return NextResponse.json({ ok: true, replied: "start" });
     }
-    if (!chatEnabled(slug) || !brainConfigured()) {
+    if (!chatEnabled(slug) || !agentReady(slug)) {
       await sendMessage(slug, chatId, "My cloud brain isn't configured on this deployment yet (ANTHROPIC_API_KEY / VAULT_GITHUB_TOKEN / SUPABASE_*).");
       return NextResponse.json({ ok: true, skipped: "brain not configured" });
     }

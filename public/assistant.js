@@ -230,7 +230,7 @@
       // Chris (slug stays chris) opens this same chat. The console bridges it to Cristofori GrokBot.
       // Ivory always opens that popup (never t.me/ivorylarsonbot). The popup posts to Ivory Grok Bot.
       // Shift-click (or data-mode="console") opens the console page instead.
-      var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true, lindsay: true, ed: true };
+      var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true, lindsay: true, ed: true, melody: true, carla: true };
       if (CHAT[slug] && !ev.shiftKey) {
         // Eddy gets the signed-in name so the thread shows who asked.
         // Ivory's face is source faces-widget. Other faces keep the app-only URL.
