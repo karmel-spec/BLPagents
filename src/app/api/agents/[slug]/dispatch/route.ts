@@ -3,6 +3,8 @@ import { gateway, type DispatchReceipt, type DispatchRecord } from "@/lib/gatewa
 import { requireSession, jsonError } from "@/lib/api";
 import { parseGoogleSession, SESSION_COOKIE } from "@/lib/auth";
 import { getAgent } from "@/lib/agents";
+import { isGrokbotSlug, IVORY_MOVING_NOTICE } from "@/lib/grokbot-shared";
+import { deliverToGrokbot, grokbotWebhookConfigured, recentGrokbotDispatches } from "@/lib/grokbot";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -21,14 +23,26 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   const { slug } = await ctx.params;
   const agent = getAgent(slug);
   if (!SLUG.test(slug) || !agent) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
-  if (/grok bot/i.test(agent.runtime || "")) {
-    return NextResponse.json({ error: `${agent.name} answers through Grok Bot chat, not the Hermes gateway.` }, { status: 409 });
-  }
   try {
     const body = (await req.json().catch(() => ({}))) as { input?: string };
     const input = String(body.input || "").trim();
     if (!input) return NextResponse.json({ error: "Type the task first" }, { status: 400 });
     if (input.length > 4000) return NextResponse.json({ error: "Keep a task under 4,000 characters" }, { status: 400 });
+    if (isGrokbotSlug(slug)) {
+      const who = parseGoogleSession(req.cookies.get(SESSION_COOKIE)?.value);
+      const delivered = await deliverToGrokbot({
+        slug,
+        who: who?.name || "Team",
+        email: who?.email || "",
+        message: input,
+        source: "dispatch",
+      });
+      return NextResponse.json(delivered);
+    }
+    // Eddy Bot's runtime matches this. Chris does not (his box is hidden in the UI).
+    if (/grok bot/i.test(agent.runtime || "")) {
+      return NextResponse.json({ error: `${agent.name} answers through Grok Bot chat, not the Hermes gateway.` }, { status: 409 });
+    }
     const receipt = await gateway<DispatchReceipt>(`/agents/${slug}/runs`, {
       method: "POST",
       body: JSON.stringify({ input, requester: requester(req) }),
@@ -46,6 +60,11 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   const { slug } = await ctx.params;
   if (!SLUG.test(slug)) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
   try {
+    if (isGrokbotSlug(slug)) {
+      const dispatches = await recentGrokbotDispatches(slug, 8);
+      const webhook = grokbotWebhookConfigured();
+      return NextResponse.json({ provider: "grokbot", webhook, dispatches, notice: webhook ? undefined : IVORY_MOVING_NOTICE });
+    }
     const r = await gateway<{ dispatches: DispatchRecord[] }>(`/agents/${slug}/dispatches?limit=8`);
     return NextResponse.json(r);
   } catch (err) {

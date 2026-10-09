@@ -67,7 +67,7 @@ function Board() {
       const agent = AGENTS.find((a) => a.slug === h.slug);
       const name = agent?.name || h.slug;
       for (const issue of h.issues) out.push({ at: h.reportedAt, text: `${name}: ${issue}` });
-      if (h.fresh && h.issues.length === 0) {
+      if (h.fresh && h.issues.length === 0 && h.reportedAt) {
         out.push({
           at: h.reportedAt,
           text: `${name} reported healthy — ${h.cronsOk}/${h.cronsActive} crons ok on ${h.machine}`,
@@ -139,7 +139,7 @@ function Board() {
                     </td>
                     <td className="mono">{h?.machine || "—"}</td>
                     <td className="mono">{h && h.cronsActive > 0 ? `${h.cronsOk}/${h.cronsActive}` : "—"}</td>
-                    <td className="mono">{h ? ago(h.reportedAt) : a.registryStatus === "Active" ? "active" : "on deck"}</td>
+                    <td className="mono">{h ? (h.reportedAt ? ago(h.reportedAt) : "cloud") : a.registryStatus === "Active" ? "active" : "on deck"}</td>
                   </tr>
                 );
               })}

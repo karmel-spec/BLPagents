@@ -44,7 +44,8 @@ export const BRIEF_SPECS: BriefSpec[] = [
     prefix: "Admin Morning Briefing",
     agents: ["ivory", "melody"],
     schedule: "7:44 AM daily",
-    // Ivory = tuning/admin/money; Melody = front desk & customer coordination.
+    // Section owners stay the slugs. Ivory (now Ivory Grok Bot, not Hermes)
+    // still owns tuning/admin/money; Melody owns front desk & customer coordination.
     sectionOwners: [
       { agent: "ivory", match: /time-clock|payment|admin/i },
       { agent: "melody", match: /media|delivery|address|sold|completed/i },

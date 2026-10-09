@@ -64,7 +64,8 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
         <span className="chip"><span className={`dot ${dotClass(d)}`} />{DOT_LABEL[d]}</span>
         {h && <span className="chip">machine: {h.machine || "—"}</span>}
         {h && h.cronsActive > 0 && <span className="chip">{h.cronsOk}/{h.cronsActive} crons ok</span>}
-        {h && <span className="chip">heartbeat {ago(h.reportedAt)} ago</span>}
+        {h && h.reportedAt && <span className="chip">heartbeat {ago(h.reportedAt)} ago</span>}
+        {h && !h.reportedAt && h.note && <span className="chip">{h.note}</span>}
         {!h && <span className="chip">{agent.registryStatus || "On Deck"} — no heartbeats yet</span>}
       </div>
 

@@ -58,6 +58,13 @@ export interface AgentConfig {
   telegram?: string;
   telegramActive?: boolean;
   healthUrl?: string;
+  /**
+   * Who answers in-app chat. `grokbot` stores the turn and wakes Ivory Grok Bot.
+   * Unset means the Claude console runtime when a mind exists, or Hermes dispatch.
+   */
+  provider?: "grokbot";
+  /** False for cloud agents that must not be marked offline when a Mac heartbeat is missing. */
+  deviceHeartbeat?: boolean;
   status: "live" | "coming-soon";
   schedule: AgentSchedule[];
   boundaries: { can: string; never: string; voice?: string };
@@ -168,6 +175,30 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
       { name: "Telegram @edlarsonbot", href: "https://t.me/edlarsonbot", note: "Same bridge, after TELEGRAM_BOT_TOKEN_ED is set and POST /api/telegram/ed/setup is called. Not marked active until that token exists." },
       { name: "YouTube @brighamspianoservice", href: "https://www.youtube.com/@brighamspianoservice", note: "Brigham Larson Pianos" },
       { name: "Video pipeline", href: "https://blpmarketing.netlify.app/video", note: "Marketing Engine cards are /video?q=<serial>" },
+    ],
+  },
+  /**
+   * Ivory Grok Bot (Karmel, 2026-10-08): cloud Grok Bot replaced the Hermes
+   * profile on Karmel's Mac. `npm run sync-registry` rewrites runtime, crons,
+   * and telegramActive from the sheet when those cells are non-empty, so pin
+   * them here. Slug, name, and /agents/ivory.jpg stay. She does not use the
+   * Claude console runtime and does not expect a Mac heartbeat.
+   */
+  ivory: {
+    name: "Ivory",
+    status: "live",
+    provider: "grokbot",
+    deviceHeartbeat: false,
+    runtime: "Grok Bot (Ivory Grok Bot)",
+    telegramActive: false,
+    homeComputer: null,
+    tagline:
+      "Tuning reactivation, confirmations, and the admin brief. Answers in this console as Ivory Grok Bot — drafts for Lisa, never sends to a customer.",
+    crons: "Lisa Admin Daily Brief (8:15 AM M–F); Tuning confirmations (8:00 AM M–F); Google Review requests (6:01 PM M–Sa)",
+    schedule: [
+      { time: "8:15 AM", days: "Mon–Fri", what: "Lisa Admin Daily Brief", where: "Ivory Grok Bot" },
+      { time: "8:00 AM", days: "Mon–Fri", what: "Tuning confirmations (14-day lookahead)", where: "Ivory Grok Bot" },
+      { time: "6:01 PM", days: "Mon–Sat", what: "Google Review requests for yesterday's paid services", where: "Ivory Grok Bot" },
     ],
   },
 };

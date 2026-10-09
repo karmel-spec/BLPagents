@@ -61,7 +61,9 @@ export async function saveHeartbeat(payload: HeartbeatPayload): Promise<number> 
   const now = new Date().toISOString();
   const rows = await readTab(STATUS_TAB);
   // Keyed by slug+machine: the same agent can have workloads on several
-  // machines (e.g. ivory: Hermes here, OpenClaw on Walter's Mac).
+  // machines (e.g. a shop agent on the Mac and a leftover row from a renamed host).
+  // Ivory is not one of these: she is Ivory Grok Bot in the cloud, and the
+  // health route replaces any device row for agents with deviceHeartbeat: false.
   const byAgent = new Map<string, string[]>();
   for (const r of rows.slice(1)) if (r[0]) byAgent.set(`${r[0]}|${r[1] || ""}`, r);
 

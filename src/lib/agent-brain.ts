@@ -16,6 +16,7 @@ import { matchesThreadQuery } from "./thread-search";
 import { config } from "./config";
 import { backendFor, createFilter, forwardInternal, getMessage, labelAndArchive, mailboxConfigured, searchMail, unsubscribe } from "./mail";
 import { markExecuted, requireApproval } from "./agent-approvals";
+import { isGrokbotSlug } from "./grokbot-shared";
 
 /** Which mailboxes each agent may open (its own credential, per AGENT_ARCHITECTURE Rule 1). */
 const MAILBOXES: Record<string, string[]> = {
@@ -72,18 +73,14 @@ MINDS.marcus = {
   tools: ["read_vault_file", "list_vault_folder", "search_shop_pianos"],
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram or the Marketing app. The person typing is a BLP teammate. You can read any vault file on demand and look up for-sale pianos on the live Store Map (price, location, status). Copy you write here is for the person to paste or file in the Marketing app's Approvals — nothing publishes from this chat.",
 };
-MINDS.ivory = {
-  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/ivory/SOUL.md", "Agents/ivory/AGENTS.md", "Agents/ivory/IDENTITY.md", "Agents/ivory/USER.md", "Agents/ivory/TOOLS.md", "Agents/ivory/STATUS.md", "Agents/ivory/TODO.md", "Agents/ivory/MEMORY.md", "Agents/ivory/kb/INDEX.md", "Agents/ivory/kb/coaching-feedback.md", "Agents/ivory/kb/KB006 — Scheduling & Intake Playbook (Brigham + Karmel).md"],
-  folders: ["Agents/ivory", "Agents/ivory/kb", "kb"],
-  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead"],
-  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand and look up customers in the Sales Console. Your scheduled jobs and scripts don't run from this chat — describe what they would do and where they live.",
-};
+// Ivory has no Claude mind. She answers only through Ivory Grok Bot (src/lib/grokbot.ts).
 /**
- * Agents whose in-app chat is the Grok Bot bridge and who have no Claude mind.
+ * Agents whose in-app chat is the Eddy/Chris Grok Bot bridge and who have no Claude mind.
  * Eddy (slug `ed`) is answered by Eddy Bot only — never MINDS / Claude / Hermes.
+ * Ivory is separate: isGrokbotSlug, her own webhook payload, and a Supabase write-back.
  */
 export const GROKBOT_CHAT_ONLY = new Set(["ed"]);
-export const chatEnabled = (slug: string) => Boolean(MINDS[slug]) || GROKBOT_CHAT_ONLY.has(slug);
+export const chatEnabled = (slug: string) => Boolean(MINDS[slug]) || GROKBOT_CHAT_ONLY.has(slug) || isGrokbotSlug(slug);
 
 // ---------------------------------------------------------------- mind (vault)
 const mindCache = new Map<string, { at: number; text: string }>();
@@ -237,11 +234,22 @@ async function runTool(name: string, input: Record<string, unknown>, ctx: ToolCt
 }
 
 // ---------------------------------------------------------------- conversation
-export interface ChatMsg { id: number; agent: string; role: "user" | "agent"; who: string; who_email: string; body: string; run_id: string | null; created_at: string; meta?: Record<string, unknown> | null }
+export interface ChatMsg {
+  id: number;
+  agent: string;
+  role: "user" | "agent";
+  who: string;
+  who_email: string;
+  body: string;
+  run_id: string | null;
+  created_at: string;
+  reply_to?: number | null;
+  meta?: Record<string, unknown> | null;
+}
 
 export async function history(slug: string, limit = 40): Promise<ChatMsg[]> {
-  const rows = await supa<ChatMsg[]>(`agent_messages?agent=eq.${encodeURIComponent(slug)}&order=created_at.desc&limit=${limit}`);
-  return rows.reverse();
+  const rows = await supa<(Omit<ChatMsg, "role"> & { role: string })[]>(`agent_messages?agent=eq.${encodeURIComponent(slug)}&order=created_at.desc&limit=${limit}`);
+  return rows.reverse().map((row) => ({ ...row, role: row.role === "assistant" ? "agent" : row.role === "user" ? "user" : "agent" }));
 }
 
 /**
@@ -293,6 +301,7 @@ export interface AskOptions {
 
 /** One turn: the person's message in, the agent's reply out (stored both ways). */
 export async function askAgent(slug: string, who: string, whoEmail: string, message: string, jobId?: number, o: AskOptions = {}): Promise<{ reply: string; tools: string[] }> {
+  if (isGrokbotSlug(slug)) throw new Error(`${slug} is answered by Ivory Grok Bot, not the Claude runtime.`);
   const m = MINDS[slug];
   if (!m) throw new Error(`No in-app mind for ${slug}`);
   const via: Via = o.via || "console";
@@ -387,7 +396,12 @@ export async function runJob(id: number): Promise<Job | null> {
   const claimed = await supa<Job[]>(`agent_jobs?id=eq.${id}&status=eq.pending`, { method: "PATCH", body: JSON.stringify({ status: "running", started_at: new Date().toISOString() }) });
   if (!claimed[0]) return getJob(id);
   const job = claimed[0];
-  // GrokBot replies land on their own. If something claims the job, put it back
+  if (isGrokbotSlug(job.agent)) {
+    const msg = `${job.agent} is answered by Ivory Grok Bot, not the Claude runtime.`;
+    await supa(`agent_jobs?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "failed", error: msg, finished_at: new Date().toISOString() }) });
+    return getJob(id);
+  }
+  // Eddy and Chris GrokBot replies land on their own. If something claims the job, put it back
   // so a later reply can still mark it done. Don't run the Claude mind.
   if (job.kind === "grokbot") {
     await supa(`agent_jobs?id=eq.${id}&status=eq.running`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "pending", started_at: null }) });

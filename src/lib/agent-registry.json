@@ -310,17 +310,17 @@
     "name": "Ivory",
     "role": "Tuning Revenue Specialist",
     "department": "Fieldwork",
-    "tagline": "Tuning reactivation outreach from Piano CRM; draft personalized emails/texts for overdue tuning; fill tuning schedule.",
+    "tagline": "Tuning reactivation, confirmations, and the admin brief. Answers in this console as Ivory Grok Bot — drafts for Lisa, never sends to a customer.",
     "reportsTo": "Lisa (day to day) / Karmel (rules)",
     "accent": "#3f6b4f",
     "avatar": "/agents/ivory.jpg",
     "email": "ivory@brighamlarsonpianos.com",
-    "runtime": "Hermes",
+    "runtime": "Grok Bot (Ivory Grok Bot)",
     "registryStatus": "Active",
-    "crons": "Tuning confirmations (8:00 AM M–F); Google Review requests (6:01 PM M–Sa); QBO Invoice Audit (4:00 AM M–F); Drive backup (11:00 PM daily)",
+    "crons": "Lisa Admin Daily Brief (8:15 AM M–F); Tuning confirmations (8:00 AM M–F); Google Review requests (6:01 PM M–Sa)",
     "homeComputer": null,
     "telegram": "https://t.me/ivorylarsonbot",
-    "telegramActive": true
+    "telegramActive": false
   },
   {
     "slug": "lee",

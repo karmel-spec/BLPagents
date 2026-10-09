@@ -164,7 +164,7 @@
     var appName = (extra && extra.app) || ((ds.app || "BLP app") + (location.pathname && location.pathname !== "/" ? " " + location.pathname : ""));
     var q = "app=" + encodeURIComponent(String(appName).slice(0, 120));
     if (extra) {
-      ["serial", "piano", "card", "user", "text"].forEach(function (k) {
+      ["serial", "piano", "card", "user", "text", "from"].forEach(function (k) {
         if (extra[k]) q += "&" + encodeURIComponent(k) + "=" + encodeURIComponent(String(extra[k]).slice(0, 500));
       });
     }
@@ -228,12 +228,14 @@
     btn.addEventListener("click", function (ev) {
       // Agents with an in-app chat open their chat popup; the rest go to Telegram.
       // Chris (slug stays chris) opens this same chat. The console bridges it to Cristofori GrokBot.
+      // Ivory always opens that popup (never t.me/ivorylarsonbot). The popup posts to Ivory Grok Bot.
       // Shift-click (or data-mode="console") opens the console page instead.
       var CHAT = { arnold: true, clara: true, chris: true, marcus: true, ivory: true, lindsay: true, ed: true };
       if (CHAT[slug] && !ev.shiftKey) {
-        // Eddy gets the signed-in name so the thread shows who asked. Other faces keep the app-only URL.
-        var extra = slug === "ed" ? { user: displayUser() } : null;
-        if (extra && !extra.user) extra = null;
+        // Eddy gets the signed-in name so the thread shows who asked.
+        // Ivory's face is source faces-widget. Other faces keep the app-only URL.
+        var extra = slug === "ed" ? { user: displayUser() } : slug === "ivory" ? { from: "faces" } : null;
+        if (extra && extra.user === "") extra = null;
         openChat(slug, extra);
         return;
       }

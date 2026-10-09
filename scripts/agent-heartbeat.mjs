@@ -27,6 +27,11 @@ const HERMES = path.join(HOME, ".hermes");
  *  does not mark him down. */
 const PROFILE_TO_SLUG = { eddy: "ed" };
 
+/** Cloud Grok Bot agents. Do not post a Mac heartbeat for them — a missing
+ *  or failing Hermes cron must not mark them offline. Keep in sync with
+ *  src/lib/grokbot-shared.ts GROKBOT_SLUGS. */
+const CLOUD_GROKBOT = new Set(["ivory"]);
+
 function key() {
   if (process.env.BLP_KEY) return process.env.BLP_KEY;
   for (const envFile of [path.join(HOME, "salesapp2", ".env.local"), path.join(HOME, "blp", ".env")]) {
@@ -188,6 +193,7 @@ all.push(...loadLaunchdServices(knownSlugs));
 const bySlug = new Map();
 for (const { profile, cron } of all) {
   const slug = PROFILE_TO_SLUG[profile] || profile;
+  if (CLOUD_GROKBOT.has(slug) || CLOUD_GROKBOT.has(profile)) continue;
   if (slug === "chris" || slug === "ed") continue; // retired Hermes profiles; Chris is the cloud bridge, Eddy is Eddy Bot
   if (!knownSlugs.has(slug)) continue; // e.g. "main" store rows already carry their real profile
   if (!bySlug.has(slug)) bySlug.set(slug, []);

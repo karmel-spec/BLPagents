@@ -3,22 +3,46 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/client";
 import type { AgentConfig } from "@/lib/agents";
+import { findGrokbotReply, GROKBOT_POLL_MS, GROKBOT_REPLY_TIMEOUT_MS, IVORY_MOVING_NOTICE, IVORY_TIMEOUT_NOTICE, type GrokbotSource } from "@/lib/grokbot-shared";
 import { isEmbedOrigin } from "@/lib/embed-origins";
 
 /**
  * In-app chat with an agent — the agent's own mind (vault files) + the Claude
  * API, no Hermes. One thread per agent, shared across the apps (same rows the
  * Store Map chat shows). Used on the agent page and full-height in the popup.
- * Eddy (slug `ed`) is the exception: he has no Claude mind. The thread is
- * forwarded to Eddy Bot and replies land back in the same rows.
+ *
+ * Ivory is the exception on her own contract: her turns are stored, then handed
+ * to Ivory Grok Bot, which inserts the reply. Eddy (slug `ed`) and Chris, when
+ * their webhooks are set, use the Grok Bot bridge in grokbot-bridge.ts.
  */
 type Msg = {
   id?: number;
-  role: "user" | "agent";
+  role: "user" | "agent" | "assistant";
   who?: string;
   body: string;
   created_at?: string;
-  meta?: { tools?: string[]; conversation_id?: string; channel?: string; context?: Record<string, string> } | null;
+  run_id?: string | null;
+  reply_to?: number | null;
+  meta?: {
+    tools?: string[];
+    in_reply_to?: number | null;
+    conversation_id?: string;
+    channel?: string;
+    context?: Record<string, string>;
+  } | null;
+};
+
+type Posted = {
+  provider?: string;
+  status?: string;
+  messageId?: number;
+  notice?: string;
+  webhook?: boolean;
+  jobId?: number;
+  reply?: string;
+  tools?: string[];
+  error?: string;
+  bridged?: boolean;
 };
 
 type ChatContext = { serial?: string; piano?: string; card_url?: string; user?: string };
@@ -40,7 +64,7 @@ const QUICK: Record<string, string[]> = {
     "What should the thumbnail say for this piano?",
   ],
   marcus: ["Which for-sale pianos deserve a post this week and why?", "Write a KSL listing for the piano I name next.", "What does our brand voice guide say about pricing in posts?"],
-  ivory: ["What's open on your TODO list right now?", "Walk me through the scheduling and intake playbook in five lines.", "Look up the customer I name next."],
+  ivory: ["What's open on your TODO list right now?", "Walk me through the scheduling and intake playbook in five lines.", "What tuning appointments need confirmation?"],
   arnold: [
     "What should Brigham's top three follow-ups be right now?",
     "Which leads reached out and are still waiting on us?",
@@ -113,25 +137,40 @@ function applyContextMessage(data: unknown): { ctx?: ChatContext; draft: string 
   return { ctx: Object.keys(ctx).length ? ctx : undefined, draft };
 }
 
-export default function ChatPanel({ agent, compact = false }: { agent: AgentConfig; compact?: boolean }) {
+export default function ChatPanel({ agent, compact = false, source: sourceProp = "console" }: { agent: AgentConfig; compact?: boolean; source?: GrokbotSource }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [bridgeWait, setBridgeWait] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [note, setNote] = useState("");
   const [bridged, setBridged] = useState(false);
   const [state, setState] = useState<"loading" | "off" | "unconfigured" | "ready">("loading");
+  const [provider, setProvider] = useState(agent.provider);
+  const [source, setSource] = useState<GrokbotSource>(sourceProp);
   const [viewer, setViewer] = useState("you");
   const [ctx, setCtx] = useState<ChatContext | undefined>(undefined);
   const [search, setSearch] = useState("");
   const [hits, setHits] = useState<Msg[] | null>(null);
   const [searching, setSearching] = useState(false);
   const end = useRef<HTMLDivElement>(null);
+  const alive = useRef(true);
   const waitFrom = useRef("");
   const dirty = useRef(false);
   const limit = compact ? 60 : 120;
+  const grokbot = provider === "grokbot" || agent.provider === "grokbot";
   const searchable = agent.slug === "ed";
+
+  useEffect(() => {
+    alive.current = true;
+    return () => { alive.current = false; };
+  }, []);
+
+  useEffect(() => {
+    if (sourceProp !== "console") { setSource(sourceProp); return; }
+    if (new URLSearchParams(window.location.search).get("from") === "faces") setSource("faces-widget");
+  }, [sourceProp]);
 
   useEffect(() => {
     const fromUrl = contextFromSearch();
@@ -157,18 +196,24 @@ export default function ChatPanel({ agent, compact = false }: { agent: AgentConf
   }, [agent.slug]);
 
   useEffect(() => {
-    api<{ enabled: boolean; configured?: boolean; bridged?: boolean; messages: Msg[]; error?: string; viewer?: { who: string } }>(`/api/agents/${agent.slug}/chat?limit=${limit}`)
+    api<{ enabled: boolean; configured?: boolean; provider?: "grokbot"; webhook?: boolean; bridged?: boolean; messages: Msg[]; error?: string; viewer?: { who: string } }>(`/api/agents/${agent.slug}/chat?limit=${limit}`)
       .then((r) => {
         if (r.viewer?.who) setViewer(r.viewer.who);
         if (!r.enabled) setState("off");
         else if (r.configured === false) { setState("unconfigured"); setError(r.error || ""); }
-        else { setState("ready"); setBridged(Boolean(r.bridged)); setMsgs(r.messages); }
+        else {
+          setState("ready");
+          setBridged(Boolean(r.bridged));
+          setMsgs(r.messages);
+          if (r.provider === "grokbot") setProvider("grokbot");
+          if (r.provider === "grokbot" && r.webhook === false) setNotice(IVORY_MOVING_NOTICE);
+        }
       })
       .catch((e) => { setState("unconfigured"); setError(e.message); });
   }, [agent.slug, limit]);
   // A Grok Bot reply can land a minute later. Poll the thread while this chat is open.
   useEffect(() => {
-    if (state !== "ready" || !bridged) return;
+    if (state !== "ready" || !bridged || grokbot) return;
     let stop = false;
     const t = setInterval(() => {
       api<{ messages: Msg[] }>(`/api/agents/${agent.slug}/chat?limit=${limit}`)
@@ -180,7 +225,7 @@ export default function ChatPanel({ agent, compact = false }: { agent: AgentConf
         .catch(() => {});
     }, 4000);
     return () => { stop = true; clearInterval(t); };
-  }, [state, bridged, agent.slug, limit]);
+  }, [state, bridged, grokbot, agent.slug, limit]);
   useEffect(() => {
     const q = search.trim();
     if (!searchable || q.length < 2) { setHits(null); setSearching(false); return; }
@@ -199,16 +244,46 @@ export default function ChatPanel({ agent, compact = false }: { agent: AgentConf
   const working = agent.slug === "chris" ? "Chris is working on it" : `${agent.name} is working on it`;
   const shown = hits ?? msgs;
 
+  async function finishGrokbot(first: Posted, original: string) {
+    if (first.status === "moving") {
+      setMsgs((x) => x.slice(0, -1));
+      setText(original);
+      setNotice(first.notice || IVORY_MOVING_NOTICE);
+      return;
+    }
+    const messageId = first.messageId;
+    if (!messageId) throw new Error(first.error || `${agent.name} didn't take that message.`);
+    const t0 = Date.now();
+    for (;;) {
+      if (!alive.current) return;
+      try {
+        const h = await api<{ messages: Msg[] }>(`/api/agents/${agent.slug}/chat?limit=${limit}`);
+        if (!alive.current) return;
+        setMsgs(h.messages);
+        if (findGrokbotReply(h.messages, messageId)) return;
+      } catch { /* a blip while polling should not drop the pending state */ }
+      if (Date.now() - t0 >= GROKBOT_REPLY_TIMEOUT_MS) break;
+      await new Promise((r) => setTimeout(r, GROKBOT_POLL_MS));
+    }
+    setNotice(IVORY_TIMEOUT_NOTICE);
+  }
+
   async function send(message: string) {
     const m = message.trim();
     if (!m || busy) return;
-    setBusy(true); setError(""); setNote(""); setText(""); dirty.current = false;
-    if (bridged) setBridgeWait(true);
+    setBusy(true); setError(""); setNotice(""); setNote(""); setText("");
+    dirty.current = false;
+    if (bridged && !grokbot) setBridgeWait(true);
     const started = new Date().toISOString();
-    const whoLabel = agent.slug === "ed" ? (ctx?.user && viewer === "Team" ? ctx.user : viewer) : "you";
-    setMsgs((x) => [...x, { role: "user", who: whoLabel, body: m, created_at: started, meta: ctx ? { context: ctx } : undefined }]);
+    const whoLabel = !grokbot && agent.slug === "ed" ? (ctx?.user && viewer === "Team" ? ctx.user : viewer) : "you";
+    setMsgs((x) => [...x, { role: "user", who: whoLabel, body: m, created_at: started, meta: !grokbot && ctx ? { context: ctx } : undefined }]);
     try {
-      const first = await api<{ jobId?: number; status?: string; reply?: string; tools?: string[]; error?: string; bridged?: boolean }>(`/api/agents/${agent.slug}/chat`, {
+      if (grokbot) {
+        const first = await api<Posted>(`/api/agents/${agent.slug}/chat`, { method: "POST", body: JSON.stringify({ message: m, source }) });
+        await finishGrokbot(first, m);
+        return;
+      }
+      const first = await api<Posted>(`/api/agents/${agent.slug}/chat`, {
         method: "POST",
         body: JSON.stringify({ message: m, app: hostApp(), ...(ctx ? { context: ctx } : {}) }),
       });
@@ -253,18 +328,28 @@ export default function ChatPanel({ agent, compact = false }: { agent: AgentConf
       if (final.status === "failed") throw new Error(final.error || `${agent.name} hit an error`);
       if (!final.reply) throw new Error(`${agent.name} is taking longer than ten minutes — the reply will appear in the thread when it lands.`);
       setMsgs((x) => [...x, { role: "agent", who: agent.name, body: final.reply!, created_at: new Date().toISOString(), meta: { tools: final.tools } }]);
-    } catch (e) { setError((e as Error).message); }
+    } catch (e) {
+      setError((e as Error).message);
+      if (grokbot) {
+        try {
+          const h = await api<{ messages: Msg[] }>(`/api/agents/${agent.slug}/chat?limit=${limit}`);
+          setMsgs(h.messages);
+        } catch { /* keep the optimistic row */ }
+      }
+    }
     finally { setBusy(false); setBridgeWait(false); }
   }
 
   if (state === "off") return null;
-  const subtitle = agent.slug === "chris"
-    ? bridged
-      ? "· a reply can take a minute; it shows up in this thread."
-      : "· in-app shop mind, until the Cristofori GrokBot webhook is set on this deployment"
-    : agent.slug === "ed"
-      ? "· Eddy Bot on Grok Bot. A reply can take a minute; it shows up in this thread."
-      : "· answers from the Knowledge Vault + Sales Console, no Hermes needed";
+  const subtitle = grokbot
+    ? "· Ivory Grok Bot, in the cloud"
+    : agent.slug === "chris"
+      ? bridged
+        ? "· a reply can take a minute; it shows up in this thread."
+        : "· in-app shop mind, until the Cristofori GrokBot webhook is set on this deployment"
+      : agent.slug === "ed"
+        ? "· Eddy Bot on Grok Bot. A reply can take a minute; it shows up in this thread."
+        : "· answers from the Knowledge Vault + Sales Console, no Hermes needed";
   return (
     <div className={`card chat${compact ? " compact" : ""}`}>
       {!compact && (
@@ -295,20 +380,22 @@ export default function ChatPanel({ agent, compact = false }: { agent: AgentConf
           <div className="muted" style={{ padding: 12 }}>
             {search.trim().length >= 2
               ? searching ? "Searching…" : "No matches in this thread."
-              : agent.slug === "chris"
-                ? "No messages yet. Ask about the queue, a stalled piano, or a before video — include the serial number."
-                : agent.slug === "ed"
-                  ? "No messages yet. Ask about a video and include the serial — or open this chat from a Marketing Engine card."
-                  : `No messages yet. Ask ${agent.name} anything about the pipeline, a lead, or a draft.`}
+              : grokbot
+                ? `No messages yet. Ask ${agent.name} about tuning appointments, confirmations, or the admin brief.`
+                : agent.slug === "chris"
+                  ? "No messages yet. Ask about the queue, a stalled piano, or a before video — include the serial number."
+                  : agent.slug === "ed"
+                    ? "No messages yet. Ask about a video and include the serial — or open this chat from a Marketing Engine card."
+                    : `No messages yet. Ask ${agent.name} anything about the pipeline, a lead, or a draft.`}
           </div>
         )}
         {search.trim().length >= 2 && hits && hits.length > 0 && (
           <div className="muted" style={{ fontSize: 12 }}>{searching ? "Searching…" : `${hits.length} match${hits.length === 1 ? "" : "es"} in Eddy's thread`}</div>
         )}
         {shown.map((m, i) => (
-          <div key={m.id ?? `t${i}`} className={`chat-msg ${m.role}`}>
+          <div key={m.id ?? `t${i}`} className={`chat-msg ${m.role === "user" ? "user" : "agent"}`}>
             <div className="chat-meta">
-              {m.role === "agent" ? agent.name : m.who || "teammate"} · {stamp(m.created_at)}
+              {m.role === "user" ? (m.who || "teammate") : agent.name} · {stamp(m.created_at)}
               {agent.slug === "ed" && m.meta?.channel === "telegram" ? " · Telegram" : ""}
               {agent.slug === "ed" && m.meta?.context?.serial ? ` · serial ${m.meta.context.serial}` : ""}
               {m.meta?.tools?.length ? <span className="muted"> · looked up: {[...new Set(m.meta.tools)].join(", ")}</span> : null}
@@ -316,10 +403,12 @@ export default function ChatPanel({ agent, compact = false }: { agent: AgentConf
             <div className="chat-body">{renderLite(m.body)}</div>
           </div>
         ))}
-        {busy && !bridgeWait && <div className="chat-msg agent thinking"><div className="chat-meta">{agent.name}</div><div className="chat-body muted">Reading the vault and the pipeline…</div></div>}
+        {busy && grokbot && <div className="chat-msg agent thinking"><div className="chat-meta">{agent.name}</div><div className="chat-body muted">{agent.name} is working on it…</div></div>}
+        {busy && !grokbot && !bridgeWait && <div className="chat-msg agent thinking"><div className="chat-meta">{agent.name}</div><div className="chat-body muted">Reading the vault and the pipeline…</div></div>}
         <div ref={end} />
       </div>
-      {busy && bridgeWait && <div className="banner info" role="status" style={{ margin: "8px 0" }}>{working}. This can take a minute — the reply will show up here.</div>}
+      {busy && bridgeWait && !grokbot && <div className="banner info" role="status" style={{ margin: "8px 0" }}>{working}. This can take a minute — the reply will show up here.</div>}
+      {notice && state === "ready" && <div className="banner warn" style={{ margin: "8px 0" }}>{notice}</div>}
       {note && state === "ready" && <div className="banner warn" style={{ margin: "8px 0" }}>{note}</div>}
       {error && state === "ready" && <div className="banner bad" style={{ margin: "8px 0" }}>⚠ {error}</div>}
       {state === "ready" && (

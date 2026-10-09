@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAgent } from "@/lib/agents";
 import { brainConfigured, chatEnabled, createJob, dispatchJob } from "@/lib/agent-brain";
+import { isGrokbotSlug } from "@/lib/grokbot-shared";
 import { receiveChrisTelegram } from "@/lib/chris-bridge";
 import { bridgeFor } from "@/lib/grokbot-bridge";
 import { botToken, chatAllowed, displayName, getMe, sendMessage, webhookSecret, type TgUpdate } from "@/lib/telegram";
@@ -19,6 +20,9 @@ const seen = new Map<string, number>(); // update_id dedupe within one warm inst
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;
+  if (isGrokbotSlug(slug)) {
+    return NextResponse.json({ ok: false, error: "Ivory answers through Ivory Grok Bot. This Telegram webhook is not used. Leave TELEGRAM_BOT_TOKEN_IVORY unset." }, { status: 410 });
+  }
   if (!SLUG.test(slug) || !getAgent(slug) || !botToken(slug)) return NextResponse.json({ error: "No Telegram bot for this agent" }, { status: 404 });
   if (req.headers.get("x-telegram-bot-api-secret-token") !== webhookSecret(slug)) return NextResponse.json({ error: "bad secret" }, { status: 403 });
   const u = (await req.json().catch(() => null)) as TgUpdate | null;

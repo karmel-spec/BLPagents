@@ -59,6 +59,14 @@ curl -X POST "https://blpagents.netlify.app/api/telegram/arnold/setup?key=$BLP_A
 ```
 `GET` the same URL for webhook status, `DELETE` to hand the bot back to Hermes.
 
+Do not register this webhook for Ivory, and do not set `TELEGRAM_BOT_TOKEN_IVORY`. Ivory is Ivory Grok Bot (below), not this Claude runtime.
+
+## Ivory Grok Bot
+
+Ivory (slug `ivory`) is the exception to the Claude console runtime. Chat on her console page, the faces widget (`/agents/ivory/chat?from=faces`), and the dispatch box store the message in `agent_messages` and POST it to her inbound webhook. She writes the reply back into that thread with the Supabase service key. The contract — payload, env vars, and the exact insert — is `docs/ivory-grokbot-bridge.md`.
+
+Set `IVORY_GROKBOT_WEBHOOK_URL` and `IVORY_GROKBOT_WEBHOOK_KEY` on Netlify. Until the URL is set, a send shows that Ivory is moving and does not error. Run `supabase/migrations/20261008170000_ivory_grokbot_reply_to.sql` so her replies can set `reply_to`. She is a cloud agent: the fleet board does not expect a Mac heartbeat, and `scripts/agent-gateway.mjs` will not hand her to Hermes.
+
 **Schedule.** `netlify/functions/arnold-scheduler.mts` fires at :00/:30 UTC and matches America/Denver wall-clock time (`src/lib/arnold-tasks.ts`), so DST never moves a run: `daily-brief` 7:30 Mon–Fri (Top Ten → Sales Console + Telegram), `briefing` 8:00 Mon–Sat (Telegram), `predraft` 10:00/14:00/17:00 Mon–Sat (drafts for approval, up to 8 leads per pass). Each run appends a line under “Cloud runtime (Netlify)” in the vault's `Agents/arnold/STATUS.md`. Run one now:
 
 ```bash
