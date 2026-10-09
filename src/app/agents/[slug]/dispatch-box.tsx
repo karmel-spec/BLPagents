@@ -35,7 +35,9 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
   const viaGrokbot = agent.provider === "grokbot";
 
   useEffect(() => {
-    if (onGrokBot || viaGrokbot) return;
+    // Ivory uses GrokbotDispatch. Eddy Bot matches /grok bot/i. Cristofori's runtime
+    // is "Cristofori GrokBot (cloud)", which does not, so also skip slug chris.
+    if (onGrokBot || viaGrokbot || agent.slug === "chris") return;
     api<Live>("/api/agents/live")
       .then((l) => {
         setLive(l);
@@ -50,9 +52,9 @@ export default function DispatchBox({ agent }: { agent: AgentConfig }) {
 
   // Ivory's tasks go to Ivory Grok Bot (same thread as chat), never Hermes.
   if (viaGrokbot) return <GrokbotDispatch agent={agent} />;
-  // Eddy Bot answers on Grok Bot. Do not hand his tasks to a Hermes profile.
-  if (onGrokBot) return null;
-
+  // Eddy Bot answers on Grok Bot. Chris answers through the chat bridge.
+  // Do not hand either to a Hermes profile.
+  if (onGrokBot || agent.slug === "chris") return null;
   if (liveError) return <div className="banner bad">⚠ Agent gateway: {liveError}</div>;
   if (!live) return null;
   if (!live.configured) return null; // gateway not set up on this deployment — nothing to show

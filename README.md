@@ -73,3 +73,72 @@ Set `IVORY_GROKBOT_WEBHOOK_URL` and `IVORY_GROKBOT_WEBHOOK_KEY` on Netlify. Unti
 curl -X POST "https://blpagents.netlify.app/api/agents/arnold/tasks/briefing?key=$BLP_APP_ACCESS_KEY"
 ```
 then poll `GET /api/agents/arnold/chat/jobs/<jobId>?key=…`; `GET /api/agents/arnold/tasks?key=…` lists the schedule, Denver time, and recent runs.
+
+## Cristofori GrokBot (Chris)
+
+Chris (slug `chris` — routes, the faces widget, and `/agents/chris.jpg` all use it) is **Cristofori GrokBot**, a Grok Bot assistant hosted outside this repo. The console is the bridge.
+
+- **App chat** (Agent Console, and the "Message Chris" button in Store Map and the Sales App) POSTs each message to `CHRIS_GROKBOT_WEBHOOK_URL`. The thread shows "Chris is working on it" and renders the reply when it arrives.
+- **Telegram** `@chrislarsonbot` posts to `/.netlify/functions/chris-telegram`. Same bridge. Allowed Telegram user ids are `TELEGRAM_ALLOWED_CHATS_CHRIS` (Brigham and Karmel).
+- **Replies** come back to `POST /api/chris/reply` with header `x-chris-bridge-secret`. Telegram replies are `sendMessage` on the Chris bot; app replies are written to the shared Supabase thread.
+- Until `CHRIS_GROKBOT_WEBHOOK_URL` and `CHRIS_GROKBOT_WEBHOOK_KEY` are both set, Chris stays on the in-app Claude mind. Nothing switches early.
+
+`POST /api/telegram/chris/setup` will not call `setWebhook`. That call is what disconnects Hermes, and it is a manual step. Env vars, the exact `setWebhook` curl, the Hermes shutdown, and the registry sheet edits are in [CUTOVER.md](CUTOVER.md).
+
+The registry JSON is generated. Change the Chris row in the sheet, then `npm run sync-registry`. The console override in `src/lib/agents.ts` already shows the Cristofori GrokBot name, runtime, and boundaries.
+
+## Eddy Bot (Grok Bot)
+
+Eddy (slug `ed`, portrait `/agents/ed.jpg`) is BLP's video editor. Hermes Eddy is retired and never had Telegram wired. Chat is answered by Eddy Bot on Grok Bot — there is no Claude mind for him.
+
+- **App chat** (Agent Console, `/agents/ed/chat`, and the faces widget) POSTs each message to `EDDY_GROKBOT_WEBHOOK_URL` with the same JSON shape as Chris (`conversation_id`, `channel`, `app`, `sender`, `text`, `history` of the previous 10 turns, `sent_at`). A video card adds `context` (`serial`, `piano`, `card_url`, `user`, and any other short string fields the caller passed).
+- **Telegram** `@edlarsonbot` posts to `POST /api/telegram/ed` (the shared webhook route, not a separate Netlify function). Allowed Telegram user ids are `TELEGRAM_ALLOWED_CHATS_ED` only — he does not inherit the sales-group `TELEGRAM_CHAT_ID`. Register with:
+
+```bash
+curl -X POST "https://blpagents.netlify.app/api/telegram/ed/setup?key=$BLP_APP_ACCESS_KEY"
+```
+
+- **Replies** come back to `POST /api/eddy/reply` with header `x-eddy-bridge-secret`. Telegram replies go out through `@edlarsonbot`. App replies are rows in the shared `agent_messages` thread (`agent=ed`), so the open chat shows them. Each row keeps who said it.
+- **Search** on Eddy's chat filters that thread by text, person, or date (newest 500 messages).
+- `telegramActive` stays false in the registry until `TELEGRAM_BOT_TOKEN_ED` is set and the sheet's "telegram active" cell is Y. The setup route returns 503 without the token. The token env is `TELEGRAM_BOT_TOKEN_ED` because the slug is `ed`.
+
+### Ask Eddy from the Marketing Engine
+
+`https://blpmarketing.netlify.app` is allowlisted for CORS on `/assistant.js` and `/api/agents/<slug>/chat`, and for `frame-ancestors` on `/agents/<slug>/chat`. The session cookie is `SameSite=Lax`, so the marketing site cannot call the chat API as the signed-in user. Open a top-level window. Sign-in returns to the same chat URL (`?next=`), so the serial and card survive the login redirect.
+
+**Script and button** (preferred). `data-agents=""` loads the helper without floating faces:
+
+```html
+<script src="https://blpagents.netlify.app/assistant.js" defer
+        data-app="Marketing Engine" data-agents=""></script>
+<button type="button" onclick="BLPAssistant.open('ed', {
+  app: 'Marketing Engine',
+  serial: '48211',
+  piano: 'Steinway M',
+  card: 'https://blpmarketing.netlify.app/video?q=48211',
+  user: 'Alisa'
+})">Ask Eddy</button>
+```
+
+`BLPAssistant.open` opens `/agents/ed/chat` with those query params and postMessages `{ type: "blp-agent-context", slug, app, serial, piano, card, user, text }` to the popup (`targetOrigin` `https://blpagents.netlify.app`). The chat answers `{ type: "blp-agent-context-ack", slug: "ed" }`.
+
+**Link.** Same fields as query params (`card` is stored as `context.card_url`):
+
+```
+https://blpagents.netlify.app/agents/ed/chat?app=Marketing%20Engine&serial=48211&piano=Steinway%20M&card=https%3A%2F%2Fblpmarketing.netlify.app%2Fvideo%3Fq%3D48211&user=Alisa
+```
+
+**postMessage** into a window already opened from an allowlisted origin:
+
+```js
+chat.postMessage({
+  type: "blp-agent-context",
+  slug: "ed",
+  serial: "48211",
+  piano: "Steinway M",
+  card: "https://blpmarketing.netlify.app/video?q=48211",
+  user: "Alisa"
+}, "https://blpagents.netlify.app");
+```
+
+The Google session name is the sender on the message. `user` fills the sender only when the console session is the shared passcode (`Team`). The name is also sent inside `context` either way. Env vars are listed in `.env.example`.

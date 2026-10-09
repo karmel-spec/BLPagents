@@ -28,10 +28,14 @@ const HOME = os.homedir();
 const PROFILES = path.join(HOME, ".hermes", "profiles");
 const LOG = path.join(HOME, ".hermes", "blp-dispatch-log.jsonl");
 const PORT = Number(process.env.BLP_GATEWAY_PORT || 8787);
-/** Private/family agents never appear in the business console. */
-const EXCLUDE = new Set(["diana"]);
-/** Cloud Grok Bot agents. Never proxy them to a Hermes profile (Ivory used
- *  to be port 8644 on Karmel's Mac). Keep in sync with src/lib/grokbot-shared.ts. */
+/** Private/family agents never appear in the business console.
+ *  chris: Hermes profile is retired. Health comes from the cloud bridge
+ *  (netlify/functions/chris-heartbeat.mts), not port 8660.
+ *  eddy: Hermes profile is retired. Chat goes to Eddy Bot, not this gateway. */
+const EXCLUDE = new Set(["diana", "chris", "eddy"]);
+/** Cloud Grok Bot agents on Ivory's contract. Never proxy them to a Hermes
+ *  profile (Ivory used to be port 8644 on Karmel's Mac). Keep in sync with
+ *  src/lib/grokbot-shared.ts. Eddy and Chris are excluded above by profile name. */
 const CLOUD_GROKBOT = new Set(["ivory"]);
 const HEALTH_TTL_MS = 30_000;
 

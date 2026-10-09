@@ -15,7 +15,7 @@ export default function AgentChatPage({ params }: { params: Promise<{ slug: stri
     <div className="chat-popup">
       <div className="page-head" style={{ alignItems: "center", gap: 12, marginBottom: 8 }}>
         <Avatar agent={agent} size={40} live={agent.status === "live"} />
-        <div><h1 style={{ margin: 0, fontSize: 18 }}>{agent.name}</h1><div className="muted" style={{ fontSize: 12 }}>{agent.role} · {agent.provider === "grokbot" ? "Ivory Grok Bot" : "answers from the Knowledge Vault"}</div></div>
+        <div><h1 style={{ margin: 0, fontSize: 18 }}>{agent.name}</h1><div className="muted" style={{ fontSize: 12 }}>{agent.provider === "grokbot" ? `${agent.role} · Ivory Grok Bot` : agent.slug === "chris" ? `${agent.role} · a reply can take a minute` : agent.slug === "ed" ? `${agent.role} · Eddy Bot, a reply can take a minute` : `${agent.role} · answers from the Knowledge Vault`}</div></div>
         <span style={{ flex: 1 }} />
         <Link href={`/agents/${agent.slug}`} className="crumb">Full page →</Link>
       </div>

@@ -21,7 +21,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   const guard = requireSession(req);
   if (guard) return guard;
   const { slug } = await ctx.params;
-  if (!SLUG.test(slug) || !getAgent(slug)) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
+  const agent = getAgent(slug);
+  if (!SLUG.test(slug) || !agent) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
   try {
     const body = (await req.json().catch(() => ({}))) as { input?: string };
     const input = String(body.input || "").trim();
@@ -37,6 +38,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
         source: "dispatch",
       });
       return NextResponse.json(delivered);
+    }
+    // Eddy Bot's runtime matches this. Chris does not (his box is hidden in the UI).
+    if (/grok bot/i.test(agent.runtime || "")) {
+      return NextResponse.json({ error: `${agent.name} answers through Grok Bot chat, not the Hermes gateway.` }, { status: 409 });
     }
     const receipt = await gateway<DispatchReceipt>(`/agents/${slug}/runs`, {
       method: "POST",

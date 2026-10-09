@@ -125,14 +125,43 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
       ["Drafting skill", "~/.hermes/profiles/arnold/skills/business-operations/blp-arnold-sales/"],
     ],
   },
+  chris: {
+    status: "live",
+    name: "Cristofori GrokBot",
+    tagline: "Cristofori GrokBot — shop manager. Drafts only: queue, stalls, before videos, and task cards from Brigham's notes.",
+    runtime: "Cristofori GrokBot (cloud)",
+    homeComputer: "Cloud (none)",
+    crons: "None. Shop Manager Briefing is the Store Map script at 7:44 AM MT, not a cron.",
+    telegram: "https://t.me/chrislarsonbot",
+    telegramActive: true,
+    schedule: [
+      { time: "7:44 AM", days: "Shop days", what: "Shop Manager Briefing (Store Map script, not a cron on this agent)", where: "BLP Shop Briefs" },
+    ],
+    boundaries: {
+      can: "Answer shop questions — queue, stalled pianos, missing stage, before-video status, QC readiness, attic and unplaced, duplicate spots — and draft task cards from Brigham's notes (owner, column, text starting with the serial, due).",
+      never: "Move a piano's stage, spot, or status · message customers, vendors, or the team (he drafts; a human sends) · handle pay, hours, discipline, hiring, or delivery-date promises · change a tech's calendar without confirmation",
+      voice: "Short and plain, the way the shop floor talks. A serial number in every line. Says could not verify rather than guessing. Signs — Chris.",
+    },
+    links: [
+      { name: "Message Chris (in the apps)", href: "/agents/chris/chat", note: "Store Map and Sales App buttons open this chat. Replies come from Cristofori GrokBot." },
+      { name: "Telegram @chrislarsonbot", href: "https://t.me/chrislarsonbot", note: "same assistant, after the webhook cutover" },
+      { name: "Store Map", href: "https://blpstoremap.netlify.app", note: "live shop truth" },
+      { name: "Shop briefs", href: "https://drive.google.com/drive/folders/1v_nxxfENOxS9BEXlFevQMFDOwTik_J3a", note: "Shop Manager Briefing, about 7:44 AM MT" },
+    ],
+  },
   /**
    * Eddy Bot (Karmel, 2026-10-08): Grok Bot replaced the Hermes Eddy profile.
    * `npm run sync-registry` rewrites name and runtime from the sheet when those
    * cells are non-empty, so pin them here. Slug stays `ed` (avatar, email, heartbeat).
    */
   ed: {
+    status: "live",
     name: "Eddy",
     runtime: "Grok Bot (Eddy Bot)",
+    // telegramActive stays on the registry value (false) until TELEGRAM_BOT_TOKEN_ED
+    // exists and the sheet's "telegram active" cell is Y. agents.ts is also imported
+    // by the browser, so it cannot read that secret. POST /api/telegram/ed/setup
+    // returns 503 until the token is set — that is the gate. Do not hardcode true here.
     schedule: [
       {
         time: "hourly, 8:12 AM–7:12 PM",
@@ -142,6 +171,8 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
       },
     ],
     links: [
+      { name: "Ask Eddy", href: "/agents/ed/chat", note: "In-app chat, answered by Eddy Bot on Grok Bot. Marketing Engine cards open this with the serial and card URL." },
+      { name: "Telegram @edlarsonbot", href: "https://t.me/edlarsonbot", note: "Same bridge, after TELEGRAM_BOT_TOKEN_ED is set and POST /api/telegram/ed/setup is called. Not marked active until that token exists." },
       { name: "YouTube @brighamspianoservice", href: "https://www.youtube.com/@brighamspianoservice", note: "Brigham Larson Pianos" },
       { name: "Video pipeline", href: "https://blpmarketing.netlify.app/video", note: "Marketing Engine cards are /video?q=<serial>" },
     ],

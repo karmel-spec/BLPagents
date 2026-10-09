@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAgent } from "@/lib/agents";
 import { brainConfigured, chatEnabled, createJob, dispatchJob } from "@/lib/agent-brain";
 import { isGrokbotSlug } from "@/lib/grokbot-shared";
+import { receiveChrisTelegram } from "@/lib/chris-bridge";
+import { bridgeFor } from "@/lib/grokbot-bridge";
 import { botToken, chatAllowed, displayName, getMe, sendMessage, webhookSecret, type TgUpdate } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +26,16 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
   if (!SLUG.test(slug) || !getAgent(slug) || !botToken(slug)) return NextResponse.json({ error: "No Telegram bot for this agent" }, { status: 404 });
   if (req.headers.get("x-telegram-bot-api-secret-token") !== webhookSecret(slug)) return NextResponse.json({ error: "bad secret" }, { status: 403 });
   const u = (await req.json().catch(() => null)) as TgUpdate | null;
+  // @chrislarsonbot: same handler as the Netlify function (GrokBot bridge, or the in-app mind when the bridge env is unset).
+  if (slug === "chris") {
+    try { return NextResponse.json(await receiveChrisTelegram(u)); }
+    catch (e) { return NextResponse.json({ ok: true, error: e instanceof Error ? e.message : String(e) }); }
+  }
+  // @edlarsonbot: Eddy Bot on Grok Bot. No Claude mind. Hermes Eddy never had Telegram wired.
+  if (slug === "ed") {
+    try { return NextResponse.json(await bridgeFor("ed")!.receiveTelegram(u)); }
+    catch (e) { return NextResponse.json({ ok: true, error: e instanceof Error ? e.message : String(e) }); }
+  }
   const msg = u?.message;
   // Always 200 from here on: a non-2xx makes Telegram retry the same update.
   if (!u || !msg || !msg.from || msg.from.is_bot) return NextResponse.json({ ok: true, skipped: "no message" });

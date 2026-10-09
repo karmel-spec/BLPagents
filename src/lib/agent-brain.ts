@@ -12,6 +12,7 @@
  */
 import { getFile, listDir, vaultConfigured } from "./vault-github";
 import { supa, supaConfigured } from "./supa";
+import { matchesThreadQuery } from "./thread-search";
 import { config } from "./config";
 import { backendFor, createFilter, forwardInternal, getMessage, labelAndArchive, mailboxConfigured, searchMail, unsubscribe } from "./mail";
 import { markExecuted, requireApproval } from "./agent-approvals";
@@ -57,11 +58,14 @@ MINDS.lindsay = {
   tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", "quickbooks_lookup"],
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, usually Karmel. You can read any vault file on demand, look up customers in the Sales Console, and look customers up in QuickBooks (read-only: invoices, balances, payments). QuickBooks figures are admin-side only — never pass prices or balances to the shop.",
 };
+// Fallback mind. When CHRIS_GROKBOT_WEBHOOK_URL and CHRIS_GROKBOT_WEBHOOK_KEY are set,
+// Chris's chats are forwarded to Cristofori GrokBot and this mind is not called.
+// Never add KB/shop-economics-CONFIDENTIAL.md here.
 MINDS.chris = {
-  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/chris/SOUL.md", "Agents/chris/SHOP_SOURCES.md", "Agents/chris/KB/INDEX.md", "Agents/chris/KB/domain-notes-and-roster.md", "Agents/chris/KB/phase-time-standards.md", "Agents/chris/KB/training-and-timeclock.md", "Agents/chris/KB/store-map-readme.md"],
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/chris/SOUL.md", "Agents/chris/SHOP_SOURCES.md", "Agents/chris/KB/INDEX.md", "Agents/chris/KB/history-shop-app.md", "Agents/chris/training-briefs/chris-telegram-training-brief.md", "Agents/chris/KB/domain-notes-and-roster.md", "Agents/chris/KB/phase-time-standards.md", "Agents/chris/KB/training-and-timeclock.md", "Agents/chris/KB/store-map-readme.md"],
   folders: ["Agents/chris", "Agents/chris/KB", "kb"],
   tools: ["read_vault_file", "list_vault_folder", "search_shop_pianos"],
-  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, often a shop manager. You can read any vault file on demand and look pianos up on the live Store Map (phase, location, queue, notes). You can't move pianos or change phases from here — say what to do in the Store Map instead.",
+  intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. You are Chris (Cristofori Larson), shop manager for Brigham Larson Pianos — this in-app mind answers only when the Cristofori GrokBot bridge is not configured. The person typing is a BLP teammate, often Brigham or the shop team. You can read any vault file on demand and look pianos up on the live Store Map (phase, location, queue, notes). You draft only: you never move a piano's stage, spot, or status, never message customers, vendors, or the team, and never handle pay, hours, hiring, or delivery dates. Say \"could not verify\" rather than guessing. Keep a serial number in every line that names a piano.",
 };
 MINDS.marcus = {
   core: ["AGENTS.md", "AGENT_STYLE.md", "Agents/marcus/SOUL.md", "Agents/marcus/AGENTS.md", "Agents/marcus/IDENTITY.md", "Agents/marcus/MEMORY.md", "Agents/marcus/STATUS.md", "Agents/marcus/LESSONS.md", "Agents/marcus/kb/KB001-brand-voice.md", "Agents/marcus/kb/KB002-youtube-strategy.md", "Agents/marcus/kb/KB003-social-platforms.md", "Agents/marcus/kb/KB004-content-templates.md", "Agents/marcus/kb/KB005-marketing-metrics.md", "Agents/marcus/kb/KB006-lead-sources.md", "Agents/marcus/kb/KB007-marketing-engine-app.md"],
@@ -70,7 +74,13 @@ MINDS.marcus = {
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram or the Marketing app. The person typing is a BLP teammate. You can read any vault file on demand and look up for-sale pianos on the live Store Map (price, location, status). Copy you write here is for the person to paste or file in the Marketing app's Approvals — nothing publishes from this chat.",
 };
 // Ivory has no Claude mind. She answers only through Ivory Grok Bot (src/lib/grokbot.ts).
-export const chatEnabled = (slug: string) => Boolean(MINDS[slug]) || isGrokbotSlug(slug);
+/**
+ * Agents whose in-app chat is the Eddy/Chris Grok Bot bridge and who have no Claude mind.
+ * Eddy (slug `ed`) is answered by Eddy Bot only — never MINDS / Claude / Hermes.
+ * Ivory is separate: isGrokbotSlug, her own webhook payload, and a Supabase write-back.
+ */
+export const GROKBOT_CHAT_ONLY = new Set(["ed"]);
+export const chatEnabled = (slug: string) => Boolean(MINDS[slug]) || GROKBOT_CHAT_ONLY.has(slug) || isGrokbotSlug(slug);
 
 // ---------------------------------------------------------------- mind (vault)
 const mindCache = new Map<string, { at: number; text: string }>();
@@ -242,6 +252,19 @@ export async function history(slug: string, limit = 40): Promise<ChatMsg[]> {
   return rows.reverse().map((row) => ({ ...row, role: row.role === "assistant" ? "agent" : row.role === "user" ? "user" : "agent" }));
 }
 
+/**
+ * Search one agent's shared thread (text, speaker, Denver date, card context).
+ * Reads the newest 500 rows and filters here so a serial or a person's name
+ * matches even when it lives in `meta.context` rather than the message body.
+ */
+export async function searchThread(slug: string, raw: string, limit = 100): Promise<ChatMsg[]> {
+  const q = raw.trim().slice(0, 120);
+  const cap = Math.min(200, Math.max(1, limit));
+  if (q.length < 2) return [];
+  const rows = await supa<ChatMsg[]>(`agent_messages?agent=eq.${encodeURIComponent(slug)}&select=id,agent,role,who,who_email,body,run_id,created_at,meta&order=created_at.desc&limit=500`);
+  return rows.filter((m) => matchesThreadQuery(m, q)).slice(0, cap).reverse();
+}
+
 async function anthropic(body: Record<string, unknown>, maxTokens = 2500): Promise<{ content: { type: string; text?: string; id?: string; name?: string; input?: Record<string, unknown> }[]; stop_reason: string; usage?: Record<string, number> }> {
   if (!ANTHROPIC_KEY) throw new Error("ANTHROPIC_API_KEY is not set on the console");
   const r = await fetch("https://api.anthropic.com/v1/messages", {
@@ -333,6 +356,13 @@ export interface JobPayload {
   task?: string;
   /** Who/what asked for a manual task run. */
   requestedBy?: string;
+  /** Grok Bot bridge (kind "grokbot"). The reply arrives via POST /api/<agent>/reply. */
+  channel?: "telegram" | "app";
+  app?: string;
+  sender?: { name: string; id: string };
+  conversation_id?: string;
+  /** Optional opener context (serial, piano, card_url, user, …). */
+  context?: Record<string, string>;
 }
 export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; summary?: string; telegramMessageIds?: number[]; vaultCommit?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
 
@@ -369,6 +399,12 @@ export async function runJob(id: number): Promise<Job | null> {
   if (isGrokbotSlug(job.agent)) {
     const msg = `${job.agent} is answered by Ivory Grok Bot, not the Claude runtime.`;
     await supa(`agent_jobs?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "failed", error: msg, finished_at: new Date().toISOString() }) });
+    return getJob(id);
+  }
+  // Eddy and Chris GrokBot replies land on their own. If something claims the job, put it back
+  // so a later reply can still mark it done. Don't run the Claude mind.
+  if (job.kind === "grokbot") {
+    await supa(`agent_jobs?id=eq.${id}&status=eq.running`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "pending", started_at: null }) });
     return getJob(id);
   }
   try {

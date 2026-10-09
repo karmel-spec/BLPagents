@@ -22,8 +22,9 @@ const APP_URL = process.env.BLP_APP_URL || "https://blpsalesapp.netlify.app";
 const HERMES = path.join(HOME, ".hermes");
 
 /** Hermes profile name → agent registry slug (only where they differ).
- *  Eddy (slug `ed`) now runs as Eddy Bot on Grok Bot, not Hermes. Keep `eddy`
- *  mapped so a leftover Hermes heartbeat still lands on this agent. */
+ *  Eddy (slug `ed`) runs as Eddy Bot on Grok Bot. The `eddy` profile name still
+ *  maps to `ed`, and that profile is skipped below so a retired Hermes folder
+ *  does not mark him down. */
 const PROFILE_TO_SLUG = { eddy: "ed" };
 
 /** Cloud Grok Bot agents. Do not post a Mac heartbeat for them — a missing
@@ -99,7 +100,8 @@ function loadOpenClawJobs(storePath) {
 
 /**
  * launchd services named com.blp.<agent>-… report as that agent's
- * "service" entries (e.g. Chris's app server, Arnold's tunnel).
+ * "service" entries (e.g. Arnold's tunnel). Chris's old app server and
+ * weekly wizard are skipped — his health is the cloud bridge.
  */
 function loadLaunchdServices(knownSlugs) {
   const out = [];
@@ -114,6 +116,7 @@ function loadLaunchdServices(knownSlugs) {
     if (!m) continue;
     const [, pid, exitCode, label] = m;
     if (label === "com.blp.agent-heartbeat") continue; // that's us
+    if (label.startsWith("com.blp.chris")) continue; // legacy app server / weekly wizard
     const slug = label
       .replace("com.blp.", "")
       .split(/[-.]/)
@@ -144,6 +147,7 @@ all.push(...loadJobs(path.join(HERMES, "cron", "jobs.json"), "main"));
 const profilesDir = path.join(HERMES, "profiles");
 if (fs.existsSync(profilesDir)) {
   for (const p of fs.readdirSync(profilesDir)) {
+    if (p === "chris" || p === "eddy") continue; // Hermes profiles retired; Chris is the cloud bridge, Eddy is Eddy Bot
     all.push(...loadJobs(path.join(profilesDir, p, "cron", "jobs.json"), p));
   }
 }
@@ -162,7 +166,7 @@ function openclawGatewayRunning() {
 const clawAgentsDir = path.join(HOME, ".openclaw", "agents");
 if (fs.existsSync(clawAgentsDir) && openclawGatewayRunning()) {
   for (const slug of fs.readdirSync(clawAgentsDir)) {
-    if (slug === "main" || slug.startsWith(".")) continue;
+    if (slug === "main" || slug === "chris" || slug === "ed" || slug === "eddy" || slug.startsWith(".")) continue;
     all.push({
       profile: slug,
       cron: {
@@ -190,6 +194,7 @@ const bySlug = new Map();
 for (const { profile, cron } of all) {
   const slug = PROFILE_TO_SLUG[profile] || profile;
   if (CLOUD_GROKBOT.has(slug) || CLOUD_GROKBOT.has(profile)) continue;
+  if (slug === "chris" || slug === "ed") continue; // retired Hermes profiles; Chris is the cloud bridge, Eddy is Eddy Bot
   if (!knownSlugs.has(slug)) continue; // e.g. "main" store rows already carry their real profile
   if (!bySlug.has(slug)) bySlug.set(slug, []);
   bySlug.get(slug).push(cron);
