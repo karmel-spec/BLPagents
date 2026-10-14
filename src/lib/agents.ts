@@ -125,6 +125,16 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
       ["Drafting skill", "~/.hermes/profiles/arnold/skills/business-operations/blp-arnold-sales/"],
     ],
   },
+  /**
+   * Clarence (Brigham, 2026-10-13): Clara renamed, male persona. Slug stays `clara`
+   * (vault folder, routes, faces widget, Supabase thread, env var names). Pinned here
+   * because `npm run sync-registry` rewrites the name from the sheet.
+   */
+  clara: {
+    name: "Clarence",
+    runtime: "Grok Bot (Clarence) via the Agent Console relay; Hermes `clara` retiring",
+    tagline: "Clarence — Brigham's executive assistant. Daily brief, inbox triage and approved cleanup rows, meeting prep, follow-ups; drafts only.",
+  },
   chris: {
     status: "live",
     name: "Cristofori GrokBot",

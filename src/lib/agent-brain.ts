@@ -54,8 +54,9 @@ export const MINDS: Record<string, { core: string[]; folders: string[]; tools: s
     intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand, look leads up in the Sales Console, and save drafts there for a rep to approve — you can never send anything to a customer.",
   },
 };
+// Clarence (slug `clara`; renamed from Clara 2026-10-13, male persona).
 MINDS.clara = {
-  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/clara/SOUL.md", "Agents/clara/STATUS.md", "Agents/clara/BRIEF_SOURCES.md", "Agents/clara/INBOX_CLEANUP.md", "Agents/clara/ENGAGEMENT_IDEAS.md", "Agents/clara/TRAINING_PLAN.md"],
+  core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/clara/SOUL.md", "Agents/clara/MEMORY.md", "Agents/clara/STATUS.md", "Agents/clara/BRIEF_SOURCES.md", "Agents/clara/INBOX_CLEANUP.md", "Agents/clara/ENGAGEMENT_IDEAS.md", "Agents/clara/TRAINING_PLAN.md"],
   folders: ["Agents/clara", "kb"],
   tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", "quickbooks_lookup", ...MAIL_TOOLS],
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate. You can read any vault file on demand, look up customers in the Sales Console, and look customers up in QuickBooks (read-only: invoices, balances, payments; admin-side only, never shared with the shop). You cannot send email from here — if something needs Brigham's inbox, say so and describe what you'd do.",
@@ -200,7 +201,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
         const r = await unsubscribe(mb, s(input.id), backendFor(mb) === "imap");
         result = `unsubscribe ${r.method}: ${r.status} (${r.detail})`;
       } else {
-        await forwardInternal(mb, s(input.id), s(input.to), s(input.note || "Forwarded by Clara per approved cleanup row."));
+        await forwardInternal(mb, s(input.id), s(input.to), s(input.note || "Forwarded by Clarence per approved cleanup row."));
         result = `forwarded message ${s(input.id)} to ${s(input.to)}`;
       }
       await markExecuted(a.id, ctx.jobId, result);

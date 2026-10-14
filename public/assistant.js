@@ -1,7 +1,7 @@
 /**
  * BLP Assistant quick-links — the agents' faces in the corner of every BLP app.
- * Default set: Clara (admin), Arnold (sales), Chris (Cristofori, shop). Override with
- * data-agents="clara,arnold,chris" (bottom → top) and data-labels="clara:Ask Clara — …|arnold:…".
+ * Default set: Clarence (slug clara; admin), Arnold (sales), Chris (Cristofori, shop). Override with
+ * data-agents="clara,arnold,chris" (bottom → top) and data-labels="clara:Ask Clarence — …|arnold:…".
  *
  * Embed with:
  *   <script src="https://blpagents.netlify.app/assistant.js" defer
@@ -60,7 +60,7 @@
   var agentList = ds.agents !== undefined ? ds.agents : (ds.agent !== undefined ? ds.agent : "clara,arnold,chris");
   var AGENTS = String(agentList).split(",").map(function (s) { return s.trim(); }).filter(Boolean);
   var LABELS = {
-    clara: "Message Clara — admin, scheduling, your inbox", arnold: "Message Arnold — sales & leads", chris: "Message Chris — the shop",
+    clara: "Message Clarence — admin, scheduling, your inbox", arnold: "Message Arnold — sales & leads", chris: "Message Chris — the shop",
     ivory: "Message Ivory — tuning revenue & reactivation", melody: "Message Melody — admin & customer service",
     marcus: "Message Marcus — marketing", lindsay: "Message Lindsay — operations, Karmel's assistant",
     ed: "Ask Eddy — video edits"

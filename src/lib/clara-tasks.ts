@@ -1,15 +1,15 @@
 /**
- * Clara's schedule in the cloud (Brigham, 2026-10-07): her Hermes cron re-homed as a
+ * Clarence's schedule in the cloud (Brigham, 2026-10-07; Clara renamed Clarence 2026-10-13, slug stays clara): his Hermes cron re-homed as a
  * task the Netlify scheduler (netlify/functions/clara-scheduler.mts) fires on Denver
  * wall-clock time. Same pattern as arnold-tasks.ts.
  *
  *   daily-brief  7:00 Mon–Fri  Brigham's Daily Brief per Agents/clara/BRIEF_SOURCES.md,
- *                              facts prefetched here, judgment by Clara, posted to
+ *                              facts prefetched here, judgment by Clarence, posted to
  *                              Brigham's Telegram chat (TELEGRAM_CHAT_ID_CLARA) and
  *                              logged to Agents/clara/STATUS.md in the vault.
  *
  * Every fact line is a fetch in this file; when a fetch fails the prompt carries
- * "could not verify" for that line and Clara says so (her no-guessing rule).
+ * "could not verify" for that line and Clarence says so (his no-guessing rule).
  */
 import { askAgent, createJob, dispatchJob, registerTaskRunner, type Job } from "./agent-brain";
 import { denver, TZ } from "./arnold-tasks";
@@ -41,7 +41,7 @@ export function dueTasks(at = new Date()): TaskDef[] {
 }
 export async function startTask(taskId: string, requestedBy: string): Promise<Job | null> {
   const t = TASKS[taskId];
-  if (!t) throw new Error(`Unknown Clara task "${taskId}" (${Object.keys(TASKS).join(", ")})`);
+  if (!t) throw new Error(`Unknown Clarence task "${taskId}" (${Object.keys(TASKS).join(", ")})`);
   const id = await createJob(AGENT, requestedBy, "", `Run the scheduled task: ${t.title}`, "task", { task: taskId, requestedBy });
   return dispatchJob(id);
 }
@@ -86,7 +86,7 @@ async function topTen(): Promise<string> {
   return `${fresh ? `Arnold's Top Ten (saved ${j.savedAt}) — link: https://blpsalesapp.netlify.app` : `Arnold's brief isn't posted yet for today (last Top Ten saved ${j.savedAt || "never"}) — remind Brigham it lands at 7:30 and link https://blpsalesapp.netlify.app`}\n${(j.items || []).slice(0, 10).map((x) => `${x.rank}. ${x.leadName} — ${x.reason}`).join("\n")}`;
 }
 
-/** Shop Manager Briefing (written 7:44 daily) — pull the four sections Clara reports on. */
+/** Shop Manager Briefing (written 7:44 daily) — pull the four sections Clarence reports on. */
 async function shopBriefing(): Promise<string> {
   const since = new Date(Date.now() - 2 * 864e5).toISOString();
   const q = `'${BRIEFS_FOLDER_ID}' in parents and trashed=false and name contains 'Shop Manager Briefing' and modifiedTime > '${since}'`;
@@ -129,7 +129,7 @@ async function dailyBriefPrompt(): Promise<string> {
   ]);
   return `Brigham's Daily Brief — ${stamp}. Every fact you need is below, fetched by the runtime per BRIEF_SOURCES.md; do not re-fetch. Where a line says "${CNV}", write exactly "could not verify" for that section and move on.
 
-Write the brief for Brigham (Telegram, plain text, short, sign "— Clara") in this order:
+Write the brief for Brigham (Telegram, plain text, short, "Prepared by Clarence", sign "— Clarence") in this order:
 1. Today's calendar — time · title · one line of prep.
 2. Task cards waiting on him — counts, then the dated/oldest ones.
 3. Sales — link the Top Ten and remind him: touch base with your ten hottest leads today.
@@ -173,8 +173,8 @@ export async function writeVaultStatus(taskId: string, status: string, jobId: nu
   const f = await getFile(STATUS_PATH);
   const { stamp } = denver();
   const line = `- ${stamp} — ${ok ? "✅" : "❌"} ${TASKS[taskId]?.title || taskId}: ${status.replace(/\n/g, " ")} _(job ${jobId})_`;
-  const note = "_Clara's schedule runs on Netlify (blpagents.netlify.app) — latest runs, newest first. Hermes on the Mac is no longer required for these._";
-  let text = f?.content || "# Clara — STATUS\n";
+  const note = "_Clarence's schedule runs on Netlify (blpagents.netlify.app) — latest runs, newest first. Hermes on the Mac is no longer required for these._";
+  let text = f?.content || "# Clarence — STATUS\n";
   const start = text.indexOf(SECTION);
   if (start >= 0) {
     const after = text.indexOf("\n## ", start + SECTION.length);
@@ -182,8 +182,8 @@ export async function writeVaultStatus(taskId: string, status: string, jobId: nu
     const kept = [line, ...block.split("\n").filter((l) => l.startsWith("- "))].slice(0, 8);
     text = text.slice(0, start) + `${SECTION}\n${note}\n${kept.join("\n")}\n` + (after >= 0 ? "\n" + text.slice(after + 1) : "");
   } else text = `${text.trimEnd()}\n\n${SECTION}\n${note}\n${line}\n`;
-  text = text.replace(/^_Updated: .*$/m, `_Updated: ${stamp} by Clara (cloud runtime)._`);
-  const r = await putFile(STATUS_PATH, text, f?.sha || null, `Clara STATUS: ${TASKS[taskId]?.title || taskId} run (cloud)`, { name: "Clara (BLP agent, cloud)", email: "clara@brighamlarsonpianos.com" });
+  text = text.replace(/^_Updated: .*$/m, `_Updated: ${stamp} by Clarence (cloud runtime)._`);
+  const r = await putFile(STATUS_PATH, text, f?.sha || null, `Clarence STATUS: ${TASKS[taskId]?.title || taskId} run (cloud)`, { name: "Clarence (BLP agent, cloud)", email: "clara@brighamlarsonpianos.com" });
   return r.commitUrl;
 }
 
