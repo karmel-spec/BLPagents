@@ -115,17 +115,36 @@ export function toolsFor(slug: string, extra: string[] = []): { name: string; de
 const mindCache = new Map<string, { at: number; text: string }>();
 const MIND_TTL = 5 * 60_000;
 
+/**
+ * Speed (Brigham, 2026-10-14: replies felt slow): the mind is ~13 GitHub reads. Netlify
+ * background functions start cold, so the in-memory cache rarely helps there — a copy
+ * also lives in Supabase `agent_mind_cache` (same 5-minute TTL), one fast read instead.
+ */
+async function sharedMind(slug: string): Promise<string | null> {
+  try {
+    const rows = await supa<{ mind: string; cached_at: string }[]>(`agent_mind_cache?slug=eq.${encodeURIComponent(slug)}&select=mind,cached_at&limit=1`);
+    const r = rows[0];
+    if (r && Date.now() - Date.parse(r.cached_at) < MIND_TTL) return r.mind;
+  } catch { /* cache only */ }
+  return null;
+}
+async function shareMind(slug: string, text: string, files: number): Promise<void> {
+  try { await supa("agent_mind_cache?on_conflict=slug", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify({ slug, mind: text, files, cached_at: new Date().toISOString() }) }); } catch { /* cache only */ }
+}
+
 export async function loadMind(slug: string, force = false): Promise<string> {
   const m = MINDS[slug];
   if (!m) throw new Error(`No in-app mind defined for ${slug}`);
   const hit = mindCache.get(slug);
   if (!force && hit && Date.now() - hit.at < MIND_TTL) return hit.text;
+  if (!force) { const shared = await sharedMind(slug); if (shared) { mindCache.set(slug, { at: Date.now(), text: shared }); return shared; } }
   const parts = await Promise.all(m.core.map(async (p) => {
     try { const f = await getFile(p); return f ? `\n\n===== ${p} =====\n${f.content.trim()}` : `\n\n===== ${p} =====\n(missing in the vault)`; }
     catch (e) { return `\n\n===== ${p} =====\n(could not load: ${e instanceof Error ? e.message : String(e)})`; }
   }));
   const text = parts.join("");
   mindCache.set(slug, { at: Date.now(), text });
+  await shareMind(slug, text, m.core.length);
   return text;
 }
 

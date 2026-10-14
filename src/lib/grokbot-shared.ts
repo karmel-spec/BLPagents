@@ -15,7 +15,7 @@ export function isGrokbotSlug(slug: string): slug is GrokbotSlug {
 
 /** How long the console waits for Ivory Grok Bot to insert her reply. */
 export const GROKBOT_REPLY_TIMEOUT_MS = 4 * 60 * 1000;
-export const GROKBOT_POLL_MS = 2500;
+export const GROKBOT_POLL_MS = 1000;
 
 export const IVORY_MOVING_NOTICE =
   "Ivory is moving to Ivory Grok Bot and isn't connected on this deployment yet. Your message was not sent. She'll answer in this same chat once the webhook is set.";

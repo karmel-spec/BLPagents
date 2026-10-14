@@ -320,7 +320,7 @@ export default function ChatPanel({ agent, compact = false, source: sourceProp =
       if (first.jobId && first.status !== "done" && first.status !== "failed") {
         const t0 = Date.now();
         while (Date.now() - t0 < 600_000) {
-          await new Promise((r) => setTimeout(r, 2500));
+          await new Promise((r) => setTimeout(r, 1000));
           const j = await api<{ status: string; reply?: string; tools?: string[]; error?: string }>(`/api/agents/${agent.slug}/chat/jobs/${first.jobId}`);
           if (j.status === "done" || j.status === "failed") { final = { ...first, ...j }; break; }
         }
