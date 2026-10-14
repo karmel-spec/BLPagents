@@ -36,7 +36,7 @@ const RELAY_TOOLS = (slug: string) => [
   { name: "get_job", description: "One job in full: who wrote, from which app or Telegram chat, the message, any task instructions, and the deadline.", inputSchema: { type: "object", properties: { jobId: { type: "number" } }, required: ["jobId"] } },
   { name: "thread_history", description: "The shared conversation with the team (same thread in the Agent Console, Telegram, Store Map and Sales App), newest last.", inputSchema: { type: "object", properties: { limit: { type: "number", description: "default 30, max 120" } } } },
   { name: "reply_to_team", description: "Deliver your answer for a job. Call exactly once per job, with the full reply as plain text (light markdown ok). The console stores it in the shared thread, sends it to the Telegram chat it came from, posts team briefs to the team group, and writes the STATUS line for scheduled tasks.", inputSchema: { type: "object", properties: { jobId: { type: "number" }, reply: { type: "string" } }, required: ["jobId", "reply"] } },
-  { name: "append_vault_note", description: `Append a dated note to one of YOUR vault files (path must start with Agents/${slug}/, e.g. Agents/${slug}/MEMORY.md or Agents/${slug}/kb/coaching-feedback.md). Creates the file if missing. Commits to the vault repo as you. Use for lessons, training notes and memory — never for secrets.`, inputSchema: { type: "object", properties: { path: { type: "string" }, note: { type: "string" }, heading: { type: "string", description: "optional heading for the dated section" } }, required: ["path", "note"] } },
+  { name: "append_vault_note", description: `Append a dated note to one of YOUR vault files (path under Agents/${slug}/, e.g. Agents/${slug}/MEMORY.md or Agents/${slug}/kb/coaching-feedback.md) or to a dated journal note (Journal/YYYY-MM-DD <topic>.md, e.g. the ops log). Creates the file if missing. Commits to the vault repo as you. Use for lessons, training notes and memory — never for secrets.`, inputSchema: { type: "object", properties: { path: { type: "string" }, note: { type: "string" }, heading: { type: "string", description: "optional heading for the dated section" } }, required: ["path", "note"] } },
 ];
 
 function toolList(slug: string) {
@@ -68,7 +68,8 @@ async function callTool(slug: string, name: string, args: Record<string, unknown
     }
     if (name === "append_vault_note") {
       const path = String(args.path || "").replace(/^\/+/, "");
-      if (!path.startsWith(`Agents/${slug}/`) || path.includes("..")) return { text: `Only files under Agents/${slug}/ may be written from here.`, isError: true };
+      const journal = /^Journal\/\d{4}-\d{2}-\d{2} [^/]+\.md$/.test(path); // dated journal notes (e.g. the ops log) are shared ground
+      if (!(path.startsWith(`Agents/${slug}/`) || journal) || path.includes("..")) return { text: `Only files under Agents/${slug}/ (or a dated Journal/YYYY-MM-DD … .md note) may be written from here.`, isError: true };
       const note = String(args.note || "").trim();
       if (!note) return { text: "Empty note", isError: true };
       const existing = await getFile(path);

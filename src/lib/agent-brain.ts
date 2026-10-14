@@ -64,7 +64,7 @@ MINDS.clara = {
 MINDS.lindsay = {
   core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", "Agents/lindsay/SOUL.md", "Agents/lindsay/OPEN_ASKS.md", "Agents/lindsay/kb/INDEX.md", "Agents/lindsay/kb/karmel.md", "Agents/lindsay/kb/people.md", "Agents/lindsay/kb/fleet.md", "Agents/lindsay/kb/reports.md", "Agents/lindsay/kb/email-triage.md", "Agents/lindsay/kb/vault-map.md"],
   folders: ["Agents/lindsay", "Agents/lindsay/kb", "kb"],
-  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", "quickbooks_lookup"],
+  tools: ["read_vault_file", "list_vault_folder", "search_leads", "lookup_lead", "quickbooks_lookup", "fleet_health"],
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, usually Karmel. You can read any vault file on demand, look up customers in the Sales Console, and look customers up in QuickBooks (read-only: invoices, balances, payments). QuickBooks figures are admin-side only — never pass prices or balances to the shop.",
 };
 // Fallback mind. When CHRIS_GROKBOT_WEBHOOK_URL and CHRIS_GROKBOT_WEBHOOK_KEY are set,
@@ -137,6 +137,7 @@ const TOOL_DEFS: Record<string, { name: string; description: string; input_schem
   lookup_lead: { name: "lookup_lead", description: "Full detail for one lead (contact, notes, timeline of texts/emails/calls, pending drafts) by its id from search_leads.", input_schema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } },
   search_shop_pianos: { name: "search_shop_pianos", description: "Look pianos up on the live Store Map (the Piano Log): serial, make/model, owner, location/slot, shop phase and phases done, queue position, track, price, wait/phase notes. Query matches serial, summary, owner or location; empty query = the shop queue in order.", input_schema: { type: "object", properties: { query: { type: "string" }, limit: { type: "number" } } } },
   save_top_ten: { name: "save_top_ten", description: "TASK MODE ONLY. Save the day's ranked Top Ten (leads a human should reach TODAY) to the Sales Console so Brigham's screen shows it. Call once per morning brief with exactly the ranked list you report.", input_schema: { type: "object", properties: { items: { type: "array", items: { type: "object", properties: { rank: { type: "number" }, leadId: { type: "string" }, leadName: { type: "string" }, reason: { type: "string", description: "one line: why today + next move" } }, required: ["rank", "leadId", "leadName", "reason"] } } }, required: ["items"] } },
+  fleet_health: { name: "fleet_health", description: "Fleet oversight (Lindsay): every live BLP agent's engine (Grok Bot relay / bridge / console mind), whether it is configured, its last cloud job (status, time, error), open jobs, and each agent's routines with their last run and summary. Use this instead of any Hermes cron check — Hermes is retired.", input_schema: { type: "object", properties: {} } },
   quickbooks_lookup: { name: "quickbooks_lookup", description: "Look a customer up in QuickBooks Online (read-only, via the Sales Console): matching customers with balance, their invoices (number, date, total, balance, line items, link) and optionally payments. Query by name or email. Admin-side only — never share these figures with the shop.", input_schema: { type: "object", properties: { query: { type: "string", description: "customer name or email" }, payments: { type: "boolean", description: "also list payments" } }, required: ["query"] } },
   save_drafts: { name: "save_drafts", description: "Save follow-up drafts on a lead in the Sales Console for a rep to approve and send (the only write you may do). Never claims to have sent anything.", input_schema: { type: "object", properties: { leadId: { type: "string" }, drafts: { type: "array", items: { type: "object", properties: { channel: { type: "string", enum: ["sms", "email"] }, subject: { type: "string" }, body: { type: "string" }, note: { type: "string" } }, required: ["channel", "body"] } } }, required: ["leadId", "drafts"] } },
 };
@@ -244,6 +245,20 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const r = await fetch(`${SALES_APP}/api/top-ten?scope=brigham`, { method: "POST", headers: { "x-blp-key": SALES_KEY, "content-type": "application/json" }, body: JSON.stringify({ items, who: "Arnold", scope: "brigham" }), signal: AbortSignal.timeout(20000) });
       const t = await r.text();
       return r.ok ? `Top Ten saved in the Sales Console: ${t.slice(0, 200)}` : `Top Ten save failed (${r.status}): ${t.slice(0, 300)}`;
+    }
+    if (name === "fleet_health") {
+      const { AGENTS, isRetired } = await import("./agents");
+      const { engineStatus } = await import("./grokbot-relay");
+      const { listRoutines } = await import("./routines");
+      const slugs = AGENTS.filter((a) => !isRetired(a) && chatEnabled(a.slug)).map((a) => a.slug);
+      const eng = await engineStatus(slugs, brainConfigured());
+      const out: Record<string, unknown> = {};
+      for (const slug of slugs) {
+        let routines: unknown[] = [];
+        try { routines = (await listRoutines(slug)).map((r) => ({ id: r.id, title: r.title, time: `${r.hour}:${String(r.minute).padStart(2, "0")}`, days: r.days, enabled: r.enabled, lastRunAt: r.last_run_at, lastStatus: r.last_status, lastSummary: r.last_summary })); } catch { /* table may be empty */ }
+        out[slug] = { ...eng[slug], routines };
+      }
+      return JSON.stringify({ checkedAt: new Date().toISOString(), note: "Hermes is retired (2026-10-14): judge health from these records, never from a Mac heartbeat or `hermes cron list`.", agents: out });
     }
     if (name === "quickbooks_lookup") {
       if (!SALES_KEY) return "QuickBooks lookup unavailable: BLP_ARNOLD_ACCESS_KEY not set on the console.";
