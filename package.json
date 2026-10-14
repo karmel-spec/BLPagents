@@ -2,13 +2,15 @@
   "name": "blp-agents",
   "version": "1.0.0",
   "private": true,
-  "description": "Brigham Larson Pianos — Agent Console (Mission Control). Roster, fleet health, and per-agent consoles for the BLP digital team.",
+  "description": "Brigham Larson Pianos \u2014 Agent Console (Mission Control). Roster, fleet health, and per-agent consoles for the BLP digital team.",
   "scripts": {
     "dev": "next dev -p 8873",
     "build": "next build",
     "start": "next start -p 8873",
     "typecheck": "tsc --noEmit",
-    "sync-registry": "node scripts/sync-registry.mjs"
+    "sync-registry": "node scripts/sync-registry.mjs",
+    "prebuild": "node scripts/sync-portraits.mjs",
+    "sync-portraits": "node scripts/sync-portraits.mjs"
   },
   "dependencies": {
     "imapflow": "^2.2.10",
