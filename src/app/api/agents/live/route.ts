@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AGENTS } from "@/lib/agents";
+import { AGENTS, isRetired } from "@/lib/agents";
 import { brainConfigured, chatEnabled } from "@/lib/agent-brain";
 import { engineStatus } from "@/lib/grokbot-relay";
 import { requireSessionOrKey, jsonError } from "@/lib/api";
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const guard = requireSessionOrKey(req);
   if (guard) return guard;
   try {
-    const slugs = AGENTS.filter((a) => chatEnabled(a.slug)).map((a) => a.slug);
+    const slugs = AGENTS.filter((a) => !isRetired(a) && chatEnabled(a.slug)).map((a) => a.slug);
     const agents = await engineStatus(slugs, brainConfigured());
     return NextResponse.json({ configured: true, machine: "cloud (Agent Console)", agents });
   } catch (err) {

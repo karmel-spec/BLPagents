@@ -114,7 +114,7 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
     },
     links: [
       { name: "Chat with Arnold (Telegram)", href: "https://t.me/arnoldlarsonbot", note: "ask him anything, assign work conversationally" },
-      { name: "Brain health check", href: "https://arnold.brighamlarsonpianos.com/health", note: "should say status: ok — if not, his Mac is asleep" },
+      { name: "Engine status", href: "/api/agents/live", note: "his engine (Grok Bot relay or the console mind), last job and open jobs — no Mac involved" },
       { name: "His approval queue", href: "https://blpsalesapp.netlify.app/approvals", note: "every draft he writes waits here for a human" },
       { name: "His lead queue", href: "https://blpsalesapp.netlify.app/leads?stale=1", note: "stale leads currently assigned to him" },
     ],
@@ -255,6 +255,10 @@ export const AGENTS: AgentConfig[] = (REGISTRY as Array<Record<string, unknown>>
 
   return { ...base, ...(OVERRIDES[base.slug] || {}) };
 });
+
+/** Retired in Karmel's registry (Sally, Dawn, Libby — Brigham 2026-09-17; Sally's work went to Arnold). Hidden from the board and health; their pages stay reachable for history. */
+export const isRetired = (a: AgentConfig) => /^retired$/i.test(a.registryStatus || "");
+export const LIVE_AGENTS = AGENTS.filter((a) => !isRetired(a));
 
 export function getAgent(slug: string): AgentConfig | undefined {
   return AGENTS.find((a) => a.slug === slug);

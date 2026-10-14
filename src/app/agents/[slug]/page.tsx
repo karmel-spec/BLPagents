@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/client";
-import { getAgent } from "@/lib/agents";
+import { getAgent, isRetired } from "@/lib/agents";
 import { Avatar, DOT_LABEL, ago, dotClass, type HealthMap } from "../../fleet-shared";
 import DispatchBox from "./dispatch-box";
 import MindPanel from "./mind-panel";
@@ -80,6 +80,7 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
         </div>
       )}
 
+      {isRetired(agent) && <div className="banner warn">Retired agent — kept for history. {agent.slug === "sally" ? "Sales follow-up is Arnold\u2019s job now." : ""}</div>}
       <div className="banner info">{agent.tagline}</div>
 
       <ChatPanel agent={agent} />

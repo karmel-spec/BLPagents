@@ -3,7 +3,7 @@ import { readAgentHealth, type AgentHealth } from "@/lib/agent-health";
 import { brainConfigured, chatEnabled } from "@/lib/agent-brain";
 import { engineStatus } from "@/lib/grokbot-relay";
 import { requireSession, jsonError } from "@/lib/api";
-import { AGENTS } from "@/lib/agents";
+import { AGENTS, isRetired } from "@/lib/agents";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
   if (guard) return guard;
   try {
     const health = await readAgentHealth();
+    for (const a of AGENTS) if (isRetired(a)) delete health[a.slug]; // retired agents (Sally → Arnold, Dawn, Libby) never count
 
     // Cloud health (Brigham, 2026-10-14: no Hermes). For every agent with a cloud
     // engine the dot comes from the console's own records — engine configured,

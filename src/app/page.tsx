@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/client";
-import { AGENTS, type AgentConfig } from "@/lib/agents";
+import { AGENTS, isRetired, type AgentConfig } from "@/lib/agents";
 import { Avatar, DOT_LABEL, DOT_RANK, ago, dotClass, type HealthDot, type HealthMap } from "./fleet-shared";
 
 /** Mission Control — the fleet board. */
@@ -49,7 +49,7 @@ function Board() {
   const dotFor = (a: AgentConfig): HealthDot => health?.[a.slug]?.dot ?? "none";
 
   const agents = useMemo(() => {
-    const list = dept ? AGENTS.filter((a) => a.department === dept) : [...AGENTS];
+    const list = (dept ? AGENTS.filter((a) => a.department === dept) : [...AGENTS]).filter((a) => !isRetired(a));
     return list.sort((x, y) => DOT_RANK[dotFor(x)] - DOT_RANK[dotFor(y)] || x.name.localeCompare(y.name));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dept, health]);
