@@ -122,7 +122,7 @@ const OVERRIDES: Record<string, Partial<AgentConfig>> = {
       ["Identity & soul", "~/Documents/BLP Knowledge Vault/agents/arnold/ (IDENTITY.md, SOUL.md, MEMORY.md)"],
       ["Knowledge base", "~/Documents/BLP Knowledge Vault/agents/arnold/kb/ (Brigham voice corpus, sales strategy rules)"],
       ["Sales Console contract", "~/Documents/BLP Knowledge Vault/agents/arnold/sales-console-api.md"],
-      ["Drafting skill", "~/.hermes/profiles/arnold/skills/business-operations/blp-arnold-sales/"],
+      ["Drafting rules", "Agents/arnold/kb/ (SALES_STRATEGY_RULES, BRIGHAM_DRAFT_PREFLIGHT_V2, coaching-feedback) — read live by his Grok Bot through the console"],
     ],
   },
   /**

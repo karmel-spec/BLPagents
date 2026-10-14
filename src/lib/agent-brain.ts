@@ -323,6 +323,8 @@ export interface AskOptions {
   freshContext?: boolean;
   /** Store the incoming prompt as a user row in agent_messages (false for scheduler prompts). */
   storePrompt?: boolean;
+  /** Store the reply as an agent row (false when the caller stores a cleaned-up version itself, e.g. routines). */
+  storeReply?: boolean;
   maxTokens?: number;
   /** Extra fields merged into the stored agent row's meta. */
   meta?: Record<string, unknown>;
@@ -372,7 +374,7 @@ export async function askAgent(slug: string, who: string, whoEmail: string, mess
     if (text) reply = text;
   }
   if (!reply) reply = "I looked but have nothing useful to add — ask me again with a bit more detail.";
-  await supa("agent_messages", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ agent: slug, role: "agent", who: slug.charAt(0).toUpperCase() + slug.slice(1), who_email: "", body: reply, run_id: jobId ? `${via}-job:${jobId}` : null, meta: { via, model: MODEL, tools: used, to: who, ...(o.meta || {}) } }) });
+  if (o.storeReply !== false) await supa("agent_messages", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ agent: slug, role: "agent", who: slug.charAt(0).toUpperCase() + slug.slice(1), who_email: "", body: reply, run_id: jobId ? `${via}-job:${jobId}` : null, meta: { via, model: MODEL, tools: used, to: who, ...(o.meta || {}) } }) });
   return { reply, tools: used };
 }
 
@@ -398,6 +400,8 @@ export interface JobPayload {
   systemNote?: string;
   /** Sales Console event that created this job (draft_request, inbound_reply, team_task…). */
   event?: { name: string; postToTeam?: boolean };
+  /** Team-set routine that created this job (see routines.ts). */
+  routine?: { id: number; title: string; deliver: { telegramChatId?: string; teamGroup?: boolean } };
   /** Fleet relay bookkeeping (see grokbot-relay.ts). */
   engine?: "grokbot" | "claude";
   wokeAt?: string;
@@ -498,6 +502,16 @@ export async function runJob(id: number): Promise<Job | null> {
     let result: NonNullable<Job["result"]>;
     if (job.kind === "task") {
       result = await (await loadTaskRunner(job.agent))(job);
+    } else if (job.kind === "routine") {
+      const { finishRoutine, ROUTINE_NOTE } = await import("./routines");
+      try {
+        const out = await askAgent(job.agent, job.who || "Scheduler", "", String(job.payload?.message || ""), id, { via: "schedule", channelNote: channelNoteFor(job), systemNote: job.payload?.systemNote || ROUTINE_NOTE, freshContext: true, storePrompt: false, storeReply: false, maxTurns: 20, maxTokens: 3500, meta: { routine: job.payload?.routine?.id } });
+        result = await finishRoutine(job, out.reply, true);
+        result.tools = out.tools;
+      } catch (e) {
+        await finishRoutine(job, "", false, e instanceof Error ? e.message : String(e)).catch(() => undefined);
+        throw e;
+      }
     } else if (job.kind === "telegram" && job.payload?.telegram) {
       const t = job.payload.telegram;
       const { sendMessage, typing, getMe } = await import("./telegram");

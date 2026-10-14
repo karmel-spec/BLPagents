@@ -84,7 +84,7 @@ function Board() {
         <span className="clock">
           {checkedAt
             ? `last sweep ${checkedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-            : "checking heartbeats…"}
+            : "checking the cloud engines…"}
         </span>
       </div>
 
@@ -149,8 +149,8 @@ function Board() {
 
         <div className="feed">
           <h2>Activity</h2>
-          {!health && !error && <div className="ev muted">listening for heartbeats…</div>}
-          {health && events.length === 0 && <div className="ev muted">No heartbeats in the status tab yet.</div>}
+          {!health && !error && <div className="ev muted">listening for cloud jobs…</div>}
+          {health && events.length === 0 && <div className="ev muted">No cloud jobs yet.</div>}
           {events.map((e, i) => (
             <div key={i} className="ev">
               <span className="t">{ago(e.at)} ago</span>

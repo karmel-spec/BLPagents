@@ -33,7 +33,7 @@ export async function wakePayload(job: Job, extra: { message?: string; systemNot
     agent: job.agent,
     agentName: name(job.agent),
     kind: job.kind,
-    via: job.kind === "telegram" ? "telegram" : job.kind === "task" ? "schedule" : p.event ? "event" : "console",
+    via: job.kind === "telegram" ? "telegram" : job.kind === "task" || job.kind === "routine" ? "schedule" : p.event ? "event" : "console",
     who: job.who,
     whoEmail: job.who_email,
     message: extra.message ?? String(p.message || ""),
@@ -75,6 +75,7 @@ export async function expireIfStale(job: Job | null): Promise<Job | null> {
   if (Date.now() < deadline) return job;
   const msg = `${name(job.agent)}'s Grok Bot did not answer within ${Math.round(grokbotWaitMs() / 60000)} minutes. Nothing was answered on their behalf — check the Bot in the Grok app (routine webhook, MCP connection) and send the message again.`;
   const rows = await supa<Job[]>(`agent_jobs?id=eq.${job.id}&status=eq.running`, { method: "PATCH", body: JSON.stringify({ status: "failed", error: msg, finished_at: new Date().toISOString() }) });
+  if (rows[0] && job.kind === "routine") { try { const { finishRoutine } = await import("./routines"); await finishRoutine(job, "", false, msg); } catch { /* bookkeeping only */ } }
   if (rows[0] && job.kind === "telegram" && job.payload?.telegram) {
     try { const { sendMessage } = await import("./telegram"); await sendMessage(job.agent, job.payload.telegram.chatId, `Sorry — ${msg}`); } catch { /* best effort */ }
   }
@@ -98,11 +99,14 @@ export async function completeGrokJob(slug: string, jobId: number, reply: string
   if (job.payload?.engine !== "grokbot") throw new Error(`Job ${jobId} is not a Grok Bot job (engine ${job.payload?.engine || "claude"})`);
   const text = String(reply || "").trim();
   if (!text) throw new Error("Empty reply");
-  const via = job.kind === "telegram" ? "telegram" : job.kind === "task" ? "schedule" : job.payload?.event ? "event" : "console";
+  const via = job.kind === "telegram" ? "telegram" : job.kind === "task" || job.kind === "routine" ? "schedule" : job.payload?.event ? "event" : "console";
   let result: NonNullable<Job["result"]> = { reply: text, tools: [], engine: "grokbot" };
   if (job.kind === "task") {
     const hooks = await loadTaskHooks(job.agent);
     result = { ...(await hooks.finish(job, text, [])), engine: "grokbot" };
+  } else if (job.kind === "routine") {
+    const { finishRoutine } = await import("./routines");
+    result = { ...(await finishRoutine(job, text, true)), engine: "grokbot" };
   } else {
     await supa("agent_messages", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ agent: slug, role: "agent", who: name(slug), who_email: "", body: text, run_id: `${via}-job:${job.id}`, meta: { via, engine: "grokbot", model: "grok-bot", replyHow: how, to: job.who, ...(job.payload?.telegram ? { telegramChat: String(job.payload.telegram.chatId) } : {}) } }) });
     if (job.kind === "telegram" && job.payload?.telegram) {

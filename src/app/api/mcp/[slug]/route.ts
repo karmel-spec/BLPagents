@@ -50,7 +50,7 @@ async function callTool(slug: string, name: string, args: Record<string, unknown
     if (name === "load_mind") return { text: MINDS[slug] ? await loadMind(slug, Boolean(args.force)) : `No mind list is defined for ${slug} on the console yet — read Agents/${slug}/SOUL.md, AGENTS.md and AGENT_STYLE.md with read_vault_file.` };
     if (name === "open_jobs") {
       const jobs = await openGrokJobs(slug);
-      return { text: jobs.length ? JSON.stringify(jobs.map((j) => ({ jobId: j.id, kind: j.kind, who: j.who, from: j.kind === "telegram" ? "telegram" : j.payload?.task ? `task:${j.payload.task}` : j.payload?.event ? `event:${j.payload.event.name}` : "app chat", message: (j.payload?.wakeMessage || j.payload?.message || "").slice(0, 1200), deadline: j.payload?.deadline })), null, 1) : "No open jobs — nothing is waiting for you." };
+      return { text: jobs.length ? JSON.stringify(jobs.map((j) => ({ jobId: j.id, kind: j.kind, who: j.who, from: j.kind === "telegram" ? "telegram" : j.payload?.task ? `task:${j.payload.task}` : j.payload?.routine ? `routine:${j.payload.routine.title}` : j.payload?.event ? `event:${j.payload.event.name}` : "app chat", message: (j.payload?.wakeMessage || j.payload?.message || "").slice(0, 1200), deadline: j.payload?.deadline })), null, 1) : "No open jobs — nothing is waiting for you." };
     }
     if (name === "get_job") {
       const j = await getJob(n(args.jobId));

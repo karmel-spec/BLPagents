@@ -8,10 +8,11 @@ import { Avatar, DOT_LABEL, ago, dotClass, type HealthMap } from "../../fleet-sh
 import DispatchBox from "./dispatch-box";
 import MindPanel from "./mind-panel";
 import ChatPanel from "./chat-panel";
+import RoutinesPanel from "./routines-panel";
 
 /**
  * Agent console — renders any agent from the registry with live health
- * from the heartbeat tab plus vault-harvested mission/boundaries.
+ * from the cloud engines (Supabase jobs) plus vault-harvested mission/boundaries.
  */
 /** Vault folders that hold this agent's mind: the slug folder plus the harvested long-name folder. */
 function mindFolders(agent: NonNullable<ReturnType<typeof getAgent>>): string[] {
@@ -66,7 +67,7 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
         {h && h.cronsActive > 0 && <span className="chip">{h.cronsOk}/{h.cronsActive} crons ok</span>}
         {h && h.reportedAt && <span className="chip">heartbeat {ago(h.reportedAt)} ago</span>}
         {h && !h.reportedAt && h.note && <span className="chip">{h.note}</span>}
-        {!h && <span className="chip">{agent.registryStatus || "On Deck"} — no heartbeats yet</span>}
+        {!h && <span className="chip">{agent.registryStatus || "On Deck"} — no cloud engine yet</span>}
       </div>
 
       {h && h.issues.length > 0 && (
@@ -83,13 +84,15 @@ export default function AgentConsole({ params }: { params: Promise<{ slug: strin
 
       <ChatPanel agent={agent} />
 
-      <DispatchBox agent={agent} />
+      <RoutinesPanel agent={agent} />
+
+      {agent.provider === "grokbot" && <DispatchBox agent={agent} />}
 
       {agent.status === "coming-soon" && !h && (
         <div className="banner warn">
           🚧 {agent.name} isn&apos;t wired up yet
           {agent.vault
-            ? " — the info below comes from the Knowledge Vault; live health arrives with the first heartbeat."
+            ? " — the info below comes from the Knowledge Vault; live health arrives with the first cloud job."
             : ` — this page is the template we'll fill in when ${agent.name} goes live.`}
         </div>
       )}
