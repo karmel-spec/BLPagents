@@ -1,5 +1,6 @@
 /**
  * SCHEDULED function: Netlify fires this at :00 and :30 every hour (UTC cron).
+ * Paused by default since 2026-10-14 (Clarence's Grok Bot runs the brief; CLARA_SCHEDULE_ENABLED=1 re-enables).
  * Converts "now" to America/Denver and starts whichever of Clarence's tasks (slug clara)
  * (src/lib/clara-tasks.ts) are due — her 7:00 Mon–Fri Daily Brief for Brigham.
  * Same pattern as arnold-scheduler.mts; kill switch CLARA_SCHEDULE_PAUSED=1.

@@ -33,7 +33,13 @@ export const TASKS: Record<string, TaskDef> = {
   "daily-brief": { id: "daily-brief", title: "Brigham's Daily Brief", times: [{ hour: 7, minute: 0 }], days: MON_FRI, maxTurns: 10, maxTokens: 4000, extraTools: [], summary: "7:00 Mon–Fri: calendar · task cards waiting on Brigham · Arnold's Top Ten · pianos needing track/scope + before video · attic count · inbox approval table · Thursday training line · top 3 only he can move. Posted to Brigham's Telegram." },
 };
 
-export const schedulePaused = () => /^(1|true|yes|on)$/i.test(process.env.CLARA_SCHEDULE_PAUSED || "");
+/**
+ * PAUSED BY DEFAULT (Brigham, 2026-10-14): Clarence's Grok Bot builds Brigham's Daily Brief itself
+ * (Tue–Fri 6:45 AM, Mon 1:45 PM, Karmel-gated), so this console schedule would be a second brief.
+ * Set CLARA_SCHEDULE_ENABLED=1 on Netlify to turn it back on; CLARA_SCHEDULE_PAUSED=1 still forces off.
+ * "Run now" (POST /api/agents/clara/tasks/daily-brief) keeps working for a manual test.
+ */
+export const schedulePaused = () => /^(1|true|yes|on)$/i.test(process.env.CLARA_SCHEDULE_PAUSED || "") || !/^(1|true|yes|on)$/i.test(process.env.CLARA_SCHEDULE_ENABLED || "");
 export function dueTasks(at = new Date()): TaskDef[] {
   if (schedulePaused()) return [];
   const { hour, minute, day } = denver(at);
