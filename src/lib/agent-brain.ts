@@ -100,14 +100,51 @@ MINDS.carla = {
   tools: ["read_vault_file", "list_vault_folder"],
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram. The person typing is a BLP teammate, usually Karmel. You manage the vehicles (fleet = vehicles at BLP). You can read any vault file on demand; the FLEET LOG sheet is your source of truth — say when a fact isn't in it.",
 };
+/**
+ * Every agent with a vault folder gets a console mind (Brigham, 2026-10-14: "give all the
+ * agents a console mind"). The Grok Bots write these folders themselves (README, SOUL,
+ * IDENTITY, MEMORY, LESSONS, STATUS, SKILLS, ROUTINES…). Agents listed in MINDS above keep
+ * their hand-tuned entry; everyone else gets a generated one: the standard files that exist
+ * in Agents/<folder>/ (looked up live, cached), plus tools picked by role. Add a new agent by
+ * adding its slug here (folder name only when it differs from the slug).
+ */
+export const VAULT_AGENTS: Record<string, string> = {
+  addie: "addie", anne: "anne", brandy: "brandy", cody: "cody", collette: "collette", collin: "collin", desie: "desie",
+  eunice: "eunice", howie: "howie", hugh: "hugh", lee: "lee", moe: "moe", monte: "monte", morgan: "morgan", penny: "penny",
+  rajeesh: "rajeesh", reese: "reese", regis: "regis", ricardo: "ricardo", sam: "sam", sharie: "sharie", shirley: "shirley",
+  tori: "tori", tray: "tray", walter: "walter", warren: "warren", yolanda: "yolanda",
+};
+/** Standard files a Bot keeps in its folder, in the order they are loaded (GROKBOT_MEMORY.md is a raw export — read on demand, not every turn). */
+const STANDARD_FILES = ["README.md", "SOUL.md", "IDENTITY.md", "MEMORY.md", "LESSONS.md", "STATUS.md", "SKILLS.md", "ROUTINES.md", "TODO.md", "SHOP_REFERENCE.md", "FLEET_SOURCES.md"];
+const FINANCE = new Set(["monte", "anne", "collette", "regis", "sam", "penny", "connie"]);
+const SHOP_OR_MARKETING = new Set(["howie", "tray", "moe", "tori", "desie", "sharie", "yolanda", "lee", "addie", "brandy", "collin", "rajeesh", "reese", "warren"]);
+const SALES_LOOKUP = new Set(["walter", "collette", "reese", "tori", "moe", "warren", "lee", "hugh"]);
+export type MindSpec = { core: string[]; folders: string[]; tools: string[]; intro: string; generated?: boolean };
+export function mindSpec(slug: string): MindSpec | undefined {
+  if (MINDS[slug]) return MINDS[slug];
+  const folder = VAULT_AGENTS[slug];
+  if (!folder) return undefined;
+  const tools = ["read_vault_file", "list_vault_folder"];
+  if (FINANCE.has(slug)) tools.push("quickbooks_lookup");
+  if (SHOP_OR_MARKETING.has(slug)) tools.push("search_shop_pianos");
+  if (SALES_LOOKUP.has(slug)) tools.push("search_leads", "lookup_lead");
+  const name = slug.charAt(0).toUpperCase() + slug.slice(1);
+  return {
+    generated: true,
+    core: ["AGENTS.md", "AGENT_STYLE.md", "kb/team/roster.md", ...STANDARD_FILES.map((f) => `Agents/${folder}/${f}`)],
+    folders: [`Agents/${folder}`, "kb"],
+    tools,
+    intro: `You are chatting inside the BLP Agent Console (a web app), not Telegram. You are ${name}; your persona, memory and rules are the files below, which your own Grok Bot keeps in the BLP Knowledge Vault. The person typing is a BLP teammate. You can read any vault file on demand${tools.includes("quickbooks_lookup") ? ", look customers up in QuickBooks (read-only, admin-side only — never share figures with the shop)" : ""}${tools.includes("search_shop_pianos") ? ", look pianos up on the live Store Map" : ""}${tools.includes("search_leads") ? ", look customers up in the Sales Console" : ""}. You draft and recommend; you never send, post, pay, or change a record from here — say what a human should click instead. Say "could not verify" rather than guess.`,
+  };
+}
 export const GROKBOT_CHAT_ONLY = new Set(["ed"]);
 /** An agent can be chatted with when it has an in-app mind, a per-agent bridge (Ivory/Chris/Eddy), or a Grok Bot wired through the fleet relay. */
-export const chatEnabled = (slug: string) => Boolean(MINDS[slug]) || GROKBOT_CHAT_ONLY.has(slug) || isGrokbotSlug(slug) || grokbotConfigured(slug);
+export const chatEnabled = (slug: string) => Boolean(mindSpec(slug)) || GROKBOT_CHAT_ONLY.has(slug) || isGrokbotSlug(slug) || grokbotConfigured(slug);
 /** Is the engine that will answer this agent configured on this deployment? (Bridged agents answer this in their own routes.) */
-export const agentReady = (slug: string) => (engineFor(slug) === "grokbot" ? supaConfigured() && vaultConfigured() : engineFor(slug) === "bridge" ? supaConfigured() : brainConfigured() && Boolean(MINDS[slug]));
+export const agentReady = (slug: string) => (engineFor(slug) === "grokbot" ? supaConfigured() && vaultConfigured() : engineFor(slug) === "bridge" ? supaConfigured() : brainConfigured() && Boolean(mindSpec(slug)));
 /** Tool definitions an engine may use for this agent (chat set + task-only extras). */
 export function toolsFor(slug: string, extra: string[] = []): { name: string; description: string; input_schema: Record<string, unknown> }[] {
-  const m = MINDS[slug];
+  const m = mindSpec(slug);
   return Array.from(new Set([...(m?.tools || ["read_vault_file", "list_vault_folder"]), ...extra])).map((t) => TOOL_DEFS[t]).filter(Boolean);
 }
 
@@ -133,12 +170,17 @@ async function shareMind(slug: string, text: string, files: number): Promise<voi
 }
 
 export async function loadMind(slug: string, force = false): Promise<string> {
-  const m = MINDS[slug];
+  const m = mindSpec(slug);
   if (!m) throw new Error(`No in-app mind defined for ${slug}`);
   const hit = mindCache.get(slug);
   if (!force && hit && Date.now() - hit.at < MIND_TTL) return hit.text;
   if (!force) { const shared = await sharedMind(slug); if (shared) { mindCache.set(slug, { at: Date.now(), text: shared }); return shared; } }
-  const parts = await Promise.all(m.core.map(async (p) => {
+  let core = m.core;
+  if (m.generated) {
+    // only the standard files this Bot actually keeps (one folder listing, cached with the mind)
+    try { const entries = await listDir(m.folders[0]); if (entries) { const have = new Set(entries.map((e) => e.path)); core = m.core.filter((p) => !p.startsWith("Agents/") || have.has(p)); } } catch { /* fall back to trying every standard file */ }
+  }
+  const parts = await Promise.all(core.map(async (p) => {
     try { const f = await getFile(p); return f ? `\n\n===== ${p} =====\n${f.content.trim()}` : `\n\n===== ${p} =====\n(missing in the vault)`; }
     catch (e) { return `\n\n===== ${p} =====\n(could not load: ${e instanceof Error ? e.message : String(e)})`; }
   }));
@@ -367,7 +409,7 @@ export interface AskOptions {
 /** One turn: the person's message in, the agent's reply out (stored both ways). */
 export async function askAgent(slug: string, who: string, whoEmail: string, message: string, jobId?: number, o: AskOptions = {}): Promise<{ reply: string; tools: string[] }> {
   if (isGrokbotSlug(slug)) throw new Error(`${slug} is answered by Ivory Grok Bot, not the Claude runtime.`);
-  const m = MINDS[slug];
+  const m = mindSpec(slug);
   if (!m) throw new Error(`No in-app mind for ${slug}`);
   const via: Via = o.via || "console";
   const mind = await loadMind(slug);

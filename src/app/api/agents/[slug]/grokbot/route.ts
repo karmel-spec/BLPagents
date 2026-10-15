@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAgent } from "@/lib/agents";
-import { MINDS, chatEnabled, toolsFor } from "@/lib/agent-brain";
+import { mindSpec, chatEnabled, toolsFor } from "@/lib/agent-brain";
 import { ENGINE_LABEL, engineFor, grokbotCallbackKey, grokbotConfigured, grokbotWebhookUrl } from "@/lib/engine";
 import { config } from "@/lib/config";
 import { requireSessionOrKey } from "@/lib/api";
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   if (!a || !/^[a-z0-9-]{1,40}$/.test(slug)) return NextResponse.json({ error: "Unknown agent" }, { status: 404 });
   const base = config.publicBaseUrl.replace(/\/$/, "");
   const S = slug.toUpperCase().replace(/-/g, "_");
-  const m = MINDS[slug];
+  const m = mindSpec(slug);
   const tasks = await taskModule(slug);
   const packet = {
     agent: { slug, name: a.name, role: a.role, email: a.email, telegram: a.telegram || null },

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAgent } from "@/lib/agents";
-import { MINDS, chatEnabled, history, loadMind, runTool, toolsFor } from "@/lib/agent-brain";
+import { mindSpec, chatEnabled, history, loadMind, runTool, toolsFor } from "@/lib/agent-brain";
 import { callbackKeyOk } from "@/lib/engine";
 import { completeGrokJob, openGrokJobs } from "@/lib/grokbot-relay";
 import { getJob } from "@/lib/agent-brain";
@@ -31,7 +31,7 @@ const TASK_EXTRAS: Record<string, string[]> = { arnold: ["save_top_ten"] };
 type Rpc = { jsonrpc?: string; id?: number | string | null; method?: string; params?: Record<string, unknown> };
 
 const RELAY_TOOLS = (slug: string) => [
-  { name: "load_mind", description: `Your working mind from the BLP Knowledge Vault (${(MINDS[slug]?.core || []).length || "the"} files: SOUL, rules, STATUS, memory, coaching). Call this first on every wake; pass force=true to bypass the 5-minute cache after you edited the vault.`, inputSchema: { type: "object", properties: { force: { type: "boolean" } } } },
+  { name: "load_mind", description: `Your working mind from the BLP Knowledge Vault (${(mindSpec(slug)?.core || []).length || "the"} files: SOUL, rules, STATUS, memory, coaching). Call this first on every wake; pass force=true to bypass the 5-minute cache after you edited the vault.`, inputSchema: { type: "object", properties: { force: { type: "boolean" } } } },
   { name: "open_jobs", description: "Messages and tasks still waiting for your answer (jobId, who, where from, message). Use when you were woken without a payload or want to catch up.", inputSchema: { type: "object", properties: {} } },
   { name: "get_job", description: "One job in full: who wrote, from which app or Telegram chat, the message, any task instructions, and the deadline.", inputSchema: { type: "object", properties: { jobId: { type: "number" } }, required: ["jobId"] } },
   { name: "thread_history", description: "The shared conversation with the team (same thread in the Agent Console, Telegram, Store Map and Sales App), newest last.", inputSchema: { type: "object", properties: { limit: { type: "number", description: "default 30, max 120" } } } },
@@ -47,7 +47,7 @@ function toolList(slug: string) {
 async function callTool(slug: string, name: string, args: Record<string, unknown>): Promise<{ text: string; isError?: boolean }> {
   const n = (v: unknown) => Number(v);
   try {
-    if (name === "load_mind") return { text: MINDS[slug] ? await loadMind(slug, Boolean(args.force)) : `No mind list is defined for ${slug} on the console yet — read Agents/${slug}/SOUL.md, AGENTS.md and AGENT_STYLE.md with read_vault_file.` };
+    if (name === "load_mind") return { text: mindSpec(slug) ? await loadMind(slug, Boolean(args.force)) : `No mind list is defined for ${slug} on the console yet — read Agents/${slug}/SOUL.md, AGENTS.md and AGENT_STYLE.md with read_vault_file.` };
     if (name === "open_jobs") {
       const jobs = await openGrokJobs(slug);
       return { text: jobs.length ? JSON.stringify(jobs.map((j) => ({ jobId: j.id, kind: j.kind, who: j.who, from: j.kind === "telegram" ? "telegram" : j.payload?.task ? `task:${j.payload.task}` : j.payload?.routine ? `routine:${j.payload.routine.title}` : j.payload?.event ? `event:${j.payload.event.name}` : "app chat", message: (j.payload?.wakeMessage || j.payload?.message || "").slice(0, 1200), deadline: j.payload?.deadline })), null, 1) : "No open jobs — nothing is waiting for you." };
