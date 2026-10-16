@@ -8,6 +8,16 @@ import { taskModule } from "@/lib/agent-tasks";
 
 export const dynamic = "force-dynamic";
 
+/** Agents with their own bridge (grokbot-bridge.ts) use per-agent env names, not the fleet relay's. Printing the relay names for them sent people down the wrong path (Eddy, 2026-10-14). */
+const BRIDGE_ENV: Record<string, string[]> = {
+  ed: ["EDDY_GROKBOT_WEBHOOK_URL", "EDDY_GROKBOT_WEBHOOK_KEY", "EDDY_BRIDGE_SECRET", "TELEGRAM_BOT_TOKEN_ED"],
+  chris: ["CHRIS_GROKBOT_WEBHOOK_URL", "CHRIS_GROKBOT_WEBHOOK_KEY", "CHRIS_BRIDGE_SECRET", "TELEGRAM_BOT_TOKEN_CHRIS"],
+};
+const BRIDGE_HINT: Record<string, string> = {
+  EDDY_GROKBOT_WEBHOOK_URL: "the Bot routine's webhook URL (bespoke bridge: replies come back to /api/eddy/reply)", EDDY_GROKBOT_WEBHOOK_KEY: "bearer the routine expects", EDDY_BRIDGE_SECRET: "x-eddy-bridge-secret the Bot presents on /api/eddy/reply", TELEGRAM_BOT_TOKEN_ED: "Telegram cut-over",
+  CHRIS_GROKBOT_WEBHOOK_URL: "the Bot routine's webhook URL (bespoke bridge: replies come back to /api/chris/reply)", CHRIS_GROKBOT_WEBHOOK_KEY: "bearer the routine expects", CHRIS_BRIDGE_SECRET: "x-chris-bridge-secret on /api/chris/reply", TELEGRAM_BOT_TOKEN_CHRIS: "Telegram cut-over",
+};
+
 /**
  * Setup packet for wiring one agent's Grok Bot to the console:
  *   GET /api/agents/<slug>/grokbot?key=…            JSON
@@ -26,7 +36,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   const packet = {
     agent: { slug, name: a.name, role: a.role, email: a.email, telegram: a.telegram || null },
     engineNow: engineFor(slug), engineLabel: ENGINE_LABEL[engineFor(slug)], chatEnabled: chatEnabled(slug),
-    env: {
+    env: BRIDGE_ENV[slug] ? Object.fromEntries(BRIDGE_ENV[slug].map((k) => [k, process.env[k] ? "set" : `MISSING — ${BRIDGE_HINT[k] || ""}`])) : {
       [`GROKBOT_WEBHOOK_URL_${S}`]: grokbotConfigured(slug) ? "set" : "MISSING — the Bot routine's webhook URL",
       [`GROKBOT_WEBHOOK_KEY_${S}`]: process.env[`GROKBOT_WEBHOOK_KEY_${S}`] ? "set" : "optional — bearer the routine expects",
       [`GROKBOT_CALLBACK_KEY_${S}`]: grokbotCallbackKey(slug) ? "set" : "MISSING — the key the Bot presents to the MCP server (or set GROKBOT_CALLBACK_KEY for the fleet)",
@@ -43,6 +53,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   if (req.nextUrl.searchParams.get("format") !== "md") return NextResponse.json(packet);
   const md = `# ${a.name} — Grok Bot wiring (generated ${new Date().toISOString().slice(0, 10)})
 
+${BRIDGE_ENV[slug] ? `> **${a.name} uses a per-agent bridge, not the fleet relay.** Skip the MCP plugin: the Bot's routine webhook receives the message and the Bot posts its answer to \`${base}/api/${slug === "ed" ? "eddy" : slug}/reply\` with the bridge secret header. Only the env vars listed under "Console env" below matter.\n` : ""}
 ## In the Grok Bot app (Brigham or Karmel)
 1. Create the Bot **${a.name} (BLP)**. Role: ${a.role}. Mailbox: ${a.email || "—"}.
 2. **Plugins → Custom MCP server (Remote HTTPS)**: URL \`${packet.mcp.url}\`, header \`Authorization: Bearer <GROKBOT_CALLBACK_KEY_${S}>\` (make the key up: long random string; store it as a Bot Secret and as the console env var of the same name).
@@ -57,7 +68,7 @@ When the BLP Agent Console wakes you by webhook, the body is a job: \`jobId\`, w
 
 Do the work with your tools (${packet.mcp.tools.slice(6).join(", ") || "vault read"}). The only writes you may do are the approval-gated ones your tools offer (drafts for a rep to approve, approved inbox rows, the Top Ten, notes in your own vault folder) — you never send anything to a customer, never post publicly, never move a piano or change a record.
 
-Always finish by calling \`reply_to_team\` once with the jobId and your full answer (plain text, light markdown; no tables when the channelNote says Telegram). Keep replies short and useful: recommendation first, details second. For a scheduled task, end the reply with one line \`STATUS: <one plain sentence under 160 characters>\`. Record lessons and training notes with \`append_vault_note\` in your own folder (Agents/${slug}/…), never secrets.
+Always finish by calling \`reply_to_team\` once with the jobId and your full answer (plain text, light markdown; no tables when the channelNote says Telegram). Keep replies short and useful: recommendation first, details second. For a scheduled task, end the reply with one line \`STATUS: <one plain sentence under 160 characters>\`. Record lessons and training notes with \`append_vault_note\` in your own folder (Agents/${slug}/…), never secrets. **When a teammate corrects you, tells you a rule, or edits your work, append a one-line lesson to Agents/${slug}/LESSONS.md with \`append_vault_note\` BEFORE you reply** — newest first, imperative, with the serial or piano when it matters; the Marketing app's nightly distill writes to the same file, so read it every wake and never contradict it.
 
 ## Routine instruction (paste)
 Trigger: Webhook. On each wake: read the webhook body as the job; if empty call open_jobs; then follow the Bot instructions and answer with reply_to_team before the deadline.
