@@ -27,7 +27,7 @@ export const maxDuration = 26;
  * Add it in the Grok Bot app as a custom MCP server (Remote HTTPS) with the key as the bearer header.
  */
 const SLUG = /^[a-z0-9-]{1,40}$/;
-const TASK_EXTRAS: Record<string, string[]> = { arnold: ["save_top_ten"] };
+const TASK_EXTRAS: Record<string, string[]> = { arnold: ["save_top_ten"], marcus: ["mark_listing_posted"] }; // marcus: B10 — Kelsy reports a post, Marcus marks it posted in the Marketing app
 type Rpc = { jsonrpc?: string; id?: number | string | null; method?: string; params?: Record<string, unknown> };
 
 const RELAY_TOOLS = (slug: string) => [
