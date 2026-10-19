@@ -79,7 +79,7 @@ MINDS.chris = {
 MINDS.marcus = {
   core: ["AGENTS.md", "AGENT_STYLE.md", "Agents/marcus/SOUL.md", "Agents/marcus/AGENTS.md", "Agents/marcus/IDENTITY.md", "Agents/marcus/MEMORY.md", "Agents/marcus/STATUS.md", "Agents/marcus/LESSONS.md", "Agents/marcus/kb/KB001-brand-voice.md", "Agents/marcus/kb/KB002-youtube-strategy.md", "Agents/marcus/kb/KB003-social-platforms.md", "Agents/marcus/kb/KB004-content-templates.md", "Agents/marcus/kb/KB005-marketing-metrics.md", "Agents/marcus/kb/KB006-lead-sources.md", "Agents/marcus/kb/KB007-marketing-engine-app.md"],
   folders: ["Agents/marcus", "Agents/marcus/kb", "kb"],
-  tools: ["read_vault_file", "list_vault_folder", "search_shop_pianos"],
+  tools: ["read_vault_file", "list_vault_folder", "search_shop_pianos", "mark_listing_posted"], // B10: the Marketing app chats with this mind, so the mark-posted tool must be here too, not only on the MCP route
   intro: "You are chatting inside the BLP Agent Console (a web app), not Telegram or the Marketing app. The person typing is a BLP teammate. You can read any vault file on demand and look up for-sale pianos on the live Store Map (price, location, status). Copy you write here is for the person to paste or file in the Marketing app's Approvals — nothing publishes from this chat.",
 };
 // Ivory has no Claude mind. She answers only through Ivory Grok Bot (src/lib/grokbot.ts).
