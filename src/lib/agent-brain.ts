@@ -524,7 +524,7 @@ export interface JobPayload {
   deadline?: string;
   wakeMessage?: string;
 }
-export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; tools?: string[]; summary?: string; telegramMessageIds?: number[]; vaultCommit?: string; engine?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
+export interface Job { id: number; agent: string; who: string; who_email: string; kind: string; payload: JobPayload; status: string; result: { reply?: string; replies?: string[]; replyCount?: number; tools?: string[]; summary?: string; telegramMessageIds?: number[]; vaultCommit?: string; engine?: string } | null; error: string | null; created_at: string; started_at: string | null; finished_at: string | null }
 
 export const onNetlify = () => Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
 

@@ -354,7 +354,7 @@ export class GrokbotBridge {
   }
 
   /** Deliver a Grok Bot reply into the conversation it names. */
-  async deliverReply(body: GrokbotReply): Promise<{ ok: true; duplicate?: boolean; jobId?: number }> {
+  async deliverReply(body: GrokbotReply): Promise<{ ok: true; duplicate?: boolean; jobId?: number; replyRunId?: string }> {
     const { slug, agentName } = this.profile;
     const conversation_id = body.conversation_id.trim();
     const text = body.text.trim();
@@ -391,19 +391,24 @@ export class GrokbotBridge {
     if (!jobId) throw Object.assign(new Error("app conversation_id must be app:<id>"), { status: 400 });
     const job = await getJob(jobId);
     if (job && job.agent === slug && job.status === "done" && job.result?.reply === text) return { ok: true, duplicate: true, jobId };
+    // One job may receive several replies (a Bot that follows up, corrects itself, or
+    // re-posts). agent_messages.run_id is unique, so each reply gets its own run_id;
+    // the job itself always shows the latest reply.
+    const run_id = `grokbot:${jobId}:${Date.now()}`;
     await this.insertMessage({
       agent: slug,
       role: "agent",
       who: agentName,
       who_email: "",
       body: text,
-      run_id: `grokbot:${jobId}`,
-      meta: { via: "grokbot", channel: "app", conversation_id },
+      run_id,
+      meta: { via: "grokbot", channel: "app", conversation_id, job_id: jobId },
     });
     if (job && job.agent === slug) {
-      await this.patchJob(jobId, { status: "done", result: { reply: text }, finished_at: new Date().toISOString() });
+      const priorReplies = Array.isArray(job.result?.replies) ? (job.result.replies as string[]) : job.result?.reply ? [String(job.result.reply)] : [];
+      await this.patchJob(jobId, { status: "done", result: { reply: text, replies: [...priorReplies, text].slice(-10), replyCount: priorReplies.length + 1 }, finished_at: new Date().toISOString() });
     }
-    return { ok: true, jobId: job?.id };
+    return { ok: true, jobId: job?.id, replyRunId: run_id };
   }
 
   private async oldestPending(conversationId: string): Promise<{ id: number } | null> {
